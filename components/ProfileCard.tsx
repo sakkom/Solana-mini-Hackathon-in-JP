@@ -38,15 +38,9 @@ interface ProfileCard {
   user: any;
   wallet: any;
   connection: any;
-  publicKey?: any;
 }
 
-export const ProfileCard: FC<ProfileCard> = ({
-  user,
-  wallet,
-  connection,
-  publicKey,
-}) => {
+export const ProfileCard: FC<ProfileCard> = ({ user, wallet, connection }) => {
   const router = useRouter();
 
   const [edit, setEdit] = useState<boolean>(false);
@@ -105,85 +99,6 @@ export const ProfileCard: FC<ProfileCard> = ({
         )}
 
         {edit && (
-          // <Card>
-          //   <CardTitle>
-          //     <h1 className="p-3">Profile</h1>
-          //   </CardTitle>
-          //   <CardContent>
-          //     <Form {...form}>
-          //       <form
-          //         onSubmit={form.handleSubmit(handleChangeUser)}
-          //         className=""
-          //       >
-          //         <div className="flex items-center">
-          //           <FormField
-          //             control={form.control}
-          //             name="genre"
-          //             render={({ field }) => (
-          //               <FormItem>
-          //                 <FormLabel>Genre</FormLabel>
-          //                 <Select
-          //                   onValueChange={field.onChange}
-          //                   defaultValue={field.value || "0"}
-          //                 >
-          //                   <FormControl>
-          //                     <SelectTrigger>
-          //                       <SelectValue>
-          //                         <Image
-          //                           src={
-          //                             iconOptions.find(
-          //                               (option) =>
-          //                                 option.value === (field.value || "0"),
-          //                             )?.src || ""
-          //                           }
-          //                           alt="alt"
-          //                           width={64}
-          //                           height={64}
-          //                           className="mt-10"
-          //                         />
-          //                       </SelectValue>
-          //                     </SelectTrigger>
-          //                   </FormControl>
-          //                   <SelectContent className="mt-5">
-          //                     {iconOptions.map((item, index) => (
-          //                       <SelectItem value={item.value} key={index}>
-          //                         <Image
-          //                           src={item.src}
-          //                           alt="alt"
-          //                           width={64}
-          //                           height={64}
-          //                           className="mt-10"
-          //                         />
-          //                         <div>{item.label}</div>
-          //                       </SelectItem>
-          //                     ))}
-          //                   </SelectContent>
-          //                 </Select>
-          //               </FormItem>
-          //             )}
-          //           />
-          //           <FormField
-          //             control={form.control}
-          //             name="username"
-          //             render={({ field }) => (
-          //               <FormItem>
-          //                 <FormLabel>Username</FormLabel>
-          //                 <FormControl>
-          //                   <Input placeholder={user?.name} {...field} />
-          //                 </FormControl>
-          //                 <FormMessage />
-          //               </FormItem>
-          //             )}
-          //           />
-          //         </div>
-
-          //         <div className="flex mt-10 justify-center">
-          //           <Button type="submit">Submit</Button>
-          //         </div>
-          //       </form>
-          //     </Form>
-          //   </CardContent>
-          // </Card>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleChangeUser)}

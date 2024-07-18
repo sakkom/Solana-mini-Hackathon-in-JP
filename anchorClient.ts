@@ -1,5 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
-import { PublicKey, Connection } from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
+import * as metaplex from "@metaplex-foundation/umi";
+import { Connection } from "@solana/web3.js";
 
 import idl from "@/idl.json";
 import { Program } from "@coral-xyz/anchor";
@@ -29,14 +31,14 @@ export async function createUser(
 
     const program = new Program(idl as anchor.Idl, programId, provider);
 
-    const [userPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("user-profile"), wallet.publicKey.toBytes()],
+    const [userPda] = web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
       program.programId,
     );
     console.log("user pda", userPda.toString());
 
     return await program.methods
-      .initialize(name, genre)
+      .createUserProfile(name, genre)
       .accounts({
         user: wallet.publicKey,
         userProfile: userPda,
@@ -59,8 +61,8 @@ export async function changeUserProfile(
 
   const program = new Program(idl as anchor.Idl, programId, provider);
 
-  const [userPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user-profile"), wallet.publicKey.toBytes()],
+  const [userPda] = web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
     program.programId,
   );
   console.log("user pda", userPda.toString());
@@ -83,8 +85,8 @@ export async function fetchUser(wallet: AnchorWallet, connection: Connection) {
   const provider = createProvider(wallet, connection);
   const program = new Program(idl as anchor.Idl, programId, provider);
 
-  const [userPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("user-profile"), wallet.publicKey.toBytes()],
+  const [userPda] = web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
     program.programId,
   );
 
@@ -92,6 +94,37 @@ export async function fetchUser(wallet: AnchorWallet, connection: Connection) {
 
   const userAccount = await program.account.userProfile.fetch(userPda);
   // console.log("user profile account data:", (userAccount as any).name);
-
   return userAccount as any;
+}
+
+export async function addUserCollective(
+  wallet: AnchorWallet,
+  connection: Connection,
+  candy: metaplex.PublicKey,
+) {
+  try {
+    const provider = createProvider(wallet, connection);
+    if (!provider) return;
+
+    const program = new Program(idl as anchor.Idl, programId, provider);
+
+    const [userPda] = web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
+      program.programId,
+    );
+    // console.log("user pda", userPda.toString());
+
+    const candy_web3 = new web3.PublicKey(candy);
+
+    return await program.methods
+      .addCollective(candy_web3)
+      .accounts({
+        user: wallet.publicKey,
+        userProfile: userPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+  } catch (err) {
+    console.error(err);
+  }
 }

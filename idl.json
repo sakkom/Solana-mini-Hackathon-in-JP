@@ -4,26 +4,79 @@
   "name": "harigami_mini_hackathon",
   "instructions": [
     {
-      "name": "initialize",
+      "name": "createUserProfile",
       "accounts": [
-        { "name": "user", "isMut": true, "isSigner": true },
-        { "name": "userProfile", "isMut": true, "isSigner": false },
-        { "name": "systemProgram", "isMut": false, "isSigner": false }
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userProfile",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
       "args": [
-        { "name": "name", "type": "string" },
-        { "name": "genre", "type": "u8" }
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "genre",
+          "type": "u8"
+        }
       ]
     },
     {
       "name": "changeUserProfile",
       "accounts": [
-        { "name": "user", "isMut": false, "isSigner": true },
-        { "name": "userProfile", "isMut": true, "isSigner": false }
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userProfile",
+          "isMut": true,
+          "isSigner": false
+        }
       ],
       "args": [
-        { "name": "name", "type": "string" },
-        { "name": "genre", "type": "u8" }
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "genre",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addCollective",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userProfile",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "candy",
+          "type": "publicKey"
+        }
       ]
     }
   ],
@@ -33,8 +86,20 @@
       "type": {
         "kind": "struct",
         "fields": [
-          { "name": "name", "type": "string" },
-          { "name": "genre", "type": "u8" }
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "genre",
+            "type": "u8"
+          },
+          {
+            "name": "candies",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
         ]
       }
     }
