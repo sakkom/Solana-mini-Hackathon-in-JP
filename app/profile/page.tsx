@@ -37,8 +37,7 @@ export default function Page() {
     if (!wallet) return;
 
     const fetchAssets = async () => {
-      const res = await fetchAssetsByYou(wallet, wallet.publicKey);
-      console.log(res);
+      const res = await fetchAssetsByYou(wallet.publicKey);
       setAssets(res);
     };
 

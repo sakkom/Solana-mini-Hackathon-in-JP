@@ -1,3 +1,7 @@
+import { fetchAssetsByYou } from "@/lib/candyMachine";
+import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { publicKey } from "@metaplex-foundation/umi";
+
 export const iconOptions = [
   { value: "0", src: "/icons/guest.png", label: "guest" },
   { value: "1", src: "/icons/skateboard.png", label: "skater" },
@@ -36,4 +40,17 @@ export function base64ToBlob(base64: any, mimeType: any) {
   const byteArray = new Uint8Array(byteNumbers);
 
   return new Blob([byteArray], { type: mimeType });
+}
+
+export async function hasCollectiveNFT(user: string, collective: string) {
+  const assets = await fetchAssetsByYou(user);
+  try {
+    const hasCollection = assets.some(
+      (asset: AssetV1) =>
+        asset.updateAuthority.address === publicKey(collective),
+    );
+    return hasCollection;
+  } catch (err) {
+    return null;
+  }
 }

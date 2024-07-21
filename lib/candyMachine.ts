@@ -236,8 +236,8 @@ export async function fetchCandy(
   return CM;
 }
 
-export async function fetchAssetsByYou(wallet: any, owner: web3.PublicKey) {
-  const umi = umiIdentityProvider(wallet);
+export async function fetchAssetsByYou(owner: web3.PublicKey | string) {
+  const umi = createUmi(web3.clusterApiUrl("devnet"));
   const assets = await fetchAssetsByOwner(umi, publicKey(owner), {
     skipDerivePlugins: false,
   });

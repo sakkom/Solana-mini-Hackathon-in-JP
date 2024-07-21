@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { base64ToBlob } from "@/utils/util";
 import { fetchCandy, mintFromCandyGuard } from "@/lib/candyMachine";
 import { publicKey } from "@metaplex-foundation/umi";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const ACCEPTED_VIDEO_TYPES = ["video/mp4"];
 
@@ -38,6 +40,7 @@ const harigamiFormSchema = z.object({
 });
 
 export default function Page({ params }: { params: { candy: string } }) {
+  const router = useRouter();
   const [authority, setAuthority] = useState<boolean>(false);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [decryptURL, setDecryptURL] = useState<string | null>(null);
@@ -100,15 +103,27 @@ export default function Page({ params }: { params: { candy: string } }) {
   };
 
   const handleDecrypt = async () => {
+    console.log("foo");
     const arweveTx = "q77tQHNVfQi_qbNCacGYyx7WV_ts4e3bWBkBT1pCPM0";
+    const collective = "5Udjsoum9iDzt3bTNnFjdXovTzExZSWiqeFE9BGSv3Bo";
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_ROOT}/irys/decode/${arweveTx}`,
+      `${process.env.NEXT_PUBLIC_API_ROOT}/irys/decode/${arweveTx}/${collective}/${wallet.publicKey}`,
+      { redirect: "follow" },
     );
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        router.push("/mint");
+      }
+    }
+
     if (res.ok) {
       const base64Image = await res.json();
       const blob = base64ToBlob(base64Image, "video/mp4");
       const url = URL.createObjectURL(blob);
       setDecryptURL(url);
+      console.log(await res.json());
     } else {
       throw new Error("server error");
       setDecryptURL(null);
@@ -169,7 +184,13 @@ export default function Page({ params }: { params: { candy: string } }) {
           <Button onClick={handleMint}>Mint</Button>
         </div>
       ) : (
-        <div>あなたはauthority: false</div>
+        <div>
+          <Card>
+            <div>q77tQHNVfQi_qbNCacGYyx7WV_ts4e3bWBkBT1pCPM0</div>
+            <Button onClick={handleDecrypt}>decode</Button>
+            {decryptURL && <video src={decryptURL} controls width="100%" />}
+          </Card>
+        </div>
       )}
     </div>
   );

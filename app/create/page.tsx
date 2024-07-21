@@ -19,7 +19,8 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { addUserCollective } from "@/anchorClient";
+import { addUserCollective, createHarigamiPda } from "@/anchorClient";
+import { PublicKey } from "@solana/web3.js";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
@@ -54,10 +55,20 @@ export default function Page() {
     if (!anchorWallet) return;
 
     try {
-      const candy = await createHarigami(wallet, values);
-      console.log("candy", candy);
-      const result = await addUserCollective(anchorWallet, connection, candy);
-      console.log("transaction", result);
+      // const candy = await createHarigami(wallet, values);
+
+      // const result = await addUserCollective(anchorWallet, connection, candy);
+      // console.log("transaction", result);
+      const candy = "59U6Jbm27pvAgawEythZ9sGqqpaAZxcio514Gf2PVSoi";
+
+      const creators = [anchorWallet.publicKey];
+      const harigamiPda = await createHarigamiPda(
+        anchorWallet,
+        connection,
+        creators,
+        candy,
+      );
+      console.log("harigami作成", harigamiPda);
     } catch (err) {
       console.error("uploadに失敗しました", err);
     }
