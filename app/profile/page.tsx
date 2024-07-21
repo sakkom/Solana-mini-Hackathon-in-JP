@@ -49,8 +49,12 @@ export default function Page() {
                 <Card>
                   <CardTitle>candies</CardTitle>
                   <CardContent>
-                    {user.candies.map((candy: web3.PublicKey) => (
-                      <div>{candy.toString()}</div>
+                    {user.candies.map((candy: web3.PublicKey, index: any) => (
+                      <div key={index}>
+                        <a href={`/${candy.toString()}`}>
+                          <div>{candy.toString()}</div>
+                        </a>
+                      </div>
                     ))}
                   </CardContent>
                 </Card>
