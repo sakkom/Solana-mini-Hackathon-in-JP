@@ -1,7 +1,11 @@
 "use client";
 
 import { fetchUser } from "@/anchorClient";
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -17,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { base64ToBlob } from "@/utils/util";
+import { fetchCandy, mintFromCandyGuard } from "@/lib/candyMachine";
+import { publicKey } from "@metaplex-foundation/umi";
 
 const ACCEPTED_VIDEO_TYPES = ["video/mp4"];
 
@@ -35,17 +41,18 @@ export default function Page({ params }: { params: { candy: string } }) {
   const [authority, setAuthority] = useState<boolean>(false);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [decryptURL, setDecryptURL] = useState<string | null>(null);
-  const wallet = useAnchorWallet();
+  const anchorWallet = useAnchorWallet();
+  const wallet = useWallet();
   const { connection } = useConnection();
   const form = useForm<z.infer<typeof harigamiFormSchema>>({
     resolver: zodResolver(harigamiFormSchema),
   });
 
   useEffect(() => {
-    if (!wallet) return;
+    if (!anchorWallet) return;
 
     const fetchUserProfile = async () => {
-      const account = await fetchUser(wallet, connection);
+      const account = await fetchUser(anchorWallet, connection);
       const user_candies = account.candies;
       console.log(user_candies);
       const isAuthority = user_candies.some(
@@ -56,7 +63,7 @@ export default function Page({ params }: { params: { candy: string } }) {
     };
 
     fetchUserProfile();
-  }, [wallet]);
+  }, [anchorWallet]);
 
   const handleUploadIrys = async (
     values: z.infer<typeof harigamiFormSchema>,
@@ -108,6 +115,16 @@ export default function Page({ params }: { params: { candy: string } }) {
     }
   };
 
+  const handleMint = async () => {
+    const res = await fetchCandy(anchorWallet, params.candy); //walletでもanchorwalletでも動く
+    const collectionMint = res.collectionMint;
+    await mintFromCandyGuard(
+      anchorWallet,
+      publicKey(params.candy),
+      collectionMint,
+    );
+  };
+
   return (
     <div>
       {authority ? (
@@ -149,6 +166,7 @@ export default function Page({ params }: { params: { candy: string } }) {
             <Button onClick={handleDecrypt}>decode</Button>
             {decryptURL && <video src={decryptURL} controls width="100%" />}
           </Card>
+          <Button onClick={handleMint}>Mint</Button>
         </div>
       ) : (
         <div>あなたはauthority: false</div>

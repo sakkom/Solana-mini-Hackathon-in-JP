@@ -8,11 +8,14 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { InitialCard } from "@/components/InitialCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { fetchAssetsByYou } from "@/lib/candyMachine";
+import { AssetV1 } from "@metaplex-foundation/mpl-core";
 
 export default function Page() {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const [user, setUser] = useState<any>();
+  const [assets, setAssets] = useState<AssetV1[]>();
 
   useEffect(() => {
     if (!wallet || !connection) return;
@@ -28,6 +31,18 @@ export default function Page() {
     };
 
     fetchUserPda();
+  }, [wallet, connection]);
+
+  useEffect(() => {
+    if (!wallet) return;
+
+    const fetchAssets = async () => {
+      const res = await fetchAssetsByYou(wallet, wallet.publicKey);
+      console.log(res);
+      setAssets(res);
+    };
+
+    fetchAssets();
   }, [wallet, connection]);
 
   return (
@@ -59,7 +74,17 @@ export default function Page() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              <TabsContent value="assets">foo</TabsContent>
+              <TabsContent value="assets">
+                {assets && (
+                  <div>
+                    {assets.map((asset: AssetV1, index: any) => (
+                      <div key={index}>
+                        <div>{asset.publicKey}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </div>
         </div>

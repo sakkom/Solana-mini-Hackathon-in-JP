@@ -1,4 +1,5 @@
 import * as web3 from "@solana/web3.js";
+import * as metaplex from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   generateSigner,
@@ -9,13 +10,20 @@ import {
   transactionBuilder,
   PublicKey,
   createGenericFileFromBrowserFile,
+  publicKey,
 } from "@metaplex-foundation/umi";
-import { mplCore, createCollectionV1 } from "@metaplex-foundation/mpl-core";
+import {
+  mplCore,
+  createCollectionV1,
+  fetchAssetsByOwner,
+} from "@metaplex-foundation/mpl-core";
 import {
   create,
   addConfigLines,
   mplCandyMachine as mplCoreCandyMachine,
   mintV1,
+  CandyMachine,
+  fetchCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { setComputeUnitLimit } from "@metaplex-foundation/mpl-toolbox";
 import { base58 } from "@metaplex-foundation/umi/serializers";
@@ -208,9 +216,31 @@ export async function mintFromCandyGuard(
     )
     .sendAndConfirm(umi, options);
 
-  // console.log(
-  //   `OK! signature: ${base58.deserialize(signature)[0]}\ Asset Id: ${assetSigner.publicKey}`,
-  // );
+  console.log(
+    `OK! signature: ${base58.deserialize(signature)[0]}\ Asset Id: ${assetSigner.publicKey}`,
+  );
 
   return assetSigner;
+}
+
+export async function fetchCandy(
+  wallet: any,
+  candy_str: string,
+): Promise<CandyMachine> {
+  const umi = umiIdentityProvider(wallet);
+  umi.use(mplCoreCandyMachine());
+
+  console.log("Fol");
+  const CM = await fetchCandyMachine(umi, publicKey(candy_str));
+
+  return CM;
+}
+
+export async function fetchAssetsByYou(wallet: any, owner: web3.PublicKey) {
+  const umi = umiIdentityProvider(wallet);
+  const assets = await fetchAssetsByOwner(umi, publicKey(owner), {
+    skipDerivePlugins: false,
+  });
+
+  return assets;
 }
