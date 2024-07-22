@@ -6,137 +6,43 @@
     {
       "name": "createUserProfile",
       "accounts": [
-        {
-          "name": "user",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "userProfile",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "userProfile", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": [
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "genre",
-          "type": "u8"
-        }
+        { "name": "name", "type": "string" },
+        { "name": "genre", "type": "u8" }
       ]
     },
     {
       "name": "changeUserProfile",
       "accounts": [
-        {
-          "name": "user",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "userProfile",
-          "isMut": true,
-          "isSigner": false
-        }
+        { "name": "user", "isMut": false, "isSigner": true },
+        { "name": "userProfile", "isMut": true, "isSigner": false }
       ],
       "args": [
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "genre",
-          "type": "u8"
-        }
+        { "name": "name", "type": "string" },
+        { "name": "genre", "type": "u8" }
       ]
     },
     {
       "name": "addCollective",
       "accounts": [
-        {
-          "name": "user",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "userProfile",
-          "isMut": true,
-          "isSigner": false
-        }
+        { "name": "user", "isMut": false, "isSigner": true },
+        { "name": "userProfile", "isMut": true, "isSigner": false }
       ],
-      "args": [
-        {
-          "name": "candy",
-          "type": "publicKey"
-        }
-      ]
+      "args": [{ "name": "candy", "type": "publicKey" }]
     },
     {
       "name": "createHarigami",
       "accounts": [
-        {
-          "name": "user",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "harigami",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "candy", "isMut": true, "isSigner": false },
+        { "name": "harigami", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [
-        {
-          "name": "creators",
-          "type": {
-            "vec": "publicKey"
-          }
-        },
-        {
-          "name": "candy",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
-      "name": "addContents",
-      "accounts": [
-        {
-          "name": "user",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "harigami",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "arweaveId",
-          "type": {
-            "defined": "ArweaveId"
-          }
-        },
-        {
-          "name": "candy",
-          "type": "publicKey"
-        }
-      ]
+      "args": [{ "name": "creators", "type": { "vec": "publicKey" } }]
     }
   ],
   "accounts": [
@@ -145,20 +51,9 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "genre",
-            "type": "u8"
-          },
-          {
-            "name": "candies",
-            "type": {
-              "vec": "publicKey"
-            }
-          }
+          { "name": "name", "type": "string" },
+          { "name": "genre", "type": "u8" },
+          { "name": "candies", "type": { "vec": "publicKey" } }
         ]
       }
     },
@@ -167,50 +62,10 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "creators",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "contents",
-            "type": {
-              "vec": {
-                "defined": "ArweaveId"
-              }
-            }
-          }
+          { "name": "creators", "type": { "vec": "publicKey" } },
+          { "name": "contents", "type": { "vec": "string" } }
         ]
       }
-    }
-  ],
-  "types": [
-    {
-      "name": "ArweaveId",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "id",
-            "type": {
-              "array": ["u8", 44]
-            }
-          }
-        ]
-      }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "CreatorLimitExceeded",
-      "msg": "over creator"
-    },
-    {
-      "code": 6001,
-      "name": "ContentsLimitExceeded",
-      "msg": "over content"
     }
   ]
 }

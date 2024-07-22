@@ -9,7 +9,7 @@ declare global {
 }
 
 export const useVanta = () => {
-  const bodyRef = useRef<HTMLBodyElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   let vantaEffect: any = null;
 
   useEffect(() => {
@@ -26,9 +26,9 @@ export const useVanta = () => {
           midtoneColor: 0x9945ff,
           lowlightColor: 0xfff000,
           baseColor: 0x14f195,
-          blurFactor: 0.8,
-          speed: 4.4,
-          zoom: 1.4,
+          blurFactor: 1.1,
+          speed: 1.5,
+          zoom: 0.5,
         });
       }
     };

@@ -7,14 +7,19 @@ import { fetchUser } from "@/anchorClient";
 import { ProfileCard } from "@/components/ProfileCard";
 import { InitialCard } from "@/components/InitialCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchAssetsByYou } from "@/lib/candyMachine";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { CollectiveCard } from "@/components/CollectiveCard";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
 export default function Page() {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const [user, setUser] = useState<any>();
+  const [collective, setCollective] = useState<web3.PublicKey[]>();
   const [assets, setAssets] = useState<AssetV1[]>();
 
   useEffect(() => {
@@ -23,7 +28,6 @@ export default function Page() {
     const fetchUserPda = async () => {
       try {
         const user = await fetchUser(wallet, connection);
-
         setUser(user);
       } catch (err) {
         console.log("pdaが存在していません");
@@ -32,6 +36,13 @@ export default function Page() {
 
     fetchUserPda();
   }, [wallet, connection]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const collective = user.candies.reverse();
+    setCollective(collective);
+  }, [user]);
 
   useEffect(() => {
     if (!wallet) return;
@@ -58,18 +69,20 @@ export default function Page() {
               </TabsList>
               <TabsContent value="collective">
                 <Card>
-                  <a href={"/create"}>create harigami</a>
-                </Card>
-                <Card>
-                  <CardTitle>candies</CardTitle>
+                  <CardHeader>
+                    <Link href={`/create`} className="flex justify-end">
+                      <Button size={"sm"}>
+                        <PlusIcon />
+                        create
+                      </Button>
+                    </Link>
+                  </CardHeader>
                   <CardContent>
-                    {user.candies.map((candy: web3.PublicKey, index: any) => (
-                      <div key={index}>
-                        <a href={`/${candy.toString()}`}>
-                          <div>{candy.toString()}</div>
-                        </a>
-                      </div>
-                    ))}
+                    {collective && collective.length > 0 ? (
+                      <CollectiveCard collective={collective} />
+                    ) : (
+                      <div>loading...</div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -89,11 +102,12 @@ export default function Page() {
         </div>
       ) : (
         <div>
-          <InitialCard
+          loading...
+          {/* <InitialCard
             wallet={wallet}
             connection={connection}
             publicKey={wallet?.publicKey}
-          />
+          /> */}
         </div>
       )}
     </div>

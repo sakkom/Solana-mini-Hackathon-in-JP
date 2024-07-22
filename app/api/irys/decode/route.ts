@@ -1,11 +1,11 @@
 import CryptoJS from "crypto-js";
 import { hasCollectiveNFT } from "@/utils/util";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { slug: string[] } },
-) {
-  const [arweaveTx, collective, user] = params.slug;
+export async function POST(request: Request) {
+  const formData = await request.formData();
+  const arweaveId = formData.get("arweaveId") as string;
+  const collective = formData.get("collective") as string;
+  const user = formData.get("user") as string;
 
   if (!(await hasCollectiveNFT(user, collective))) {
     return new Response("Let's mint harigami", { status: 401 });
@@ -18,7 +18,7 @@ export async function GET(
     });
   }
 
-  const irysUrl = `https://gateway.irys.xyz/${arweaveTx}`;
+  const irysUrl = `https://gateway.irys.xyz/${arweaveId}`;
 
   try {
     const res = await fetch(irysUrl);

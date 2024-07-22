@@ -1,6 +1,12 @@
+import * as web3 from "@solana/web3.js";
 import { fetchAssetsByYou } from "@/lib/candyMachine";
-import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { AssetV1, fetchCollectionV1 } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
+import {
+  fetchCandyMachine,
+  mplCandyMachine as mplCoreCandyMachine,
+} from "@metaplex-foundation/mpl-core-candy-machine";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 
 export const iconOptions = [
   { value: "0", src: "/icons/guest.png", label: "guest" },
@@ -52,5 +58,28 @@ export async function hasCollectiveNFT(user: string, collective: string) {
     return hasCollection;
   } catch (err) {
     return null;
+  }
+}
+
+export async function fetchJacket(candy: string) {
+  const umi = createUmi(web3.clusterApiUrl("devnet")).use(
+    mplCoreCandyMachine(),
+  );
+
+  try {
+    const cm = await fetchCandyMachine(umi, publicKey(candy));
+
+    const col = await fetchCollectionV1(umi, cm.collectionMint);
+
+    const res = await fetch(col.uri);
+
+    const metaData = await res.json();
+
+    const image = metaData.image;
+
+    return image;
+  } catch (err) {
+    console.error("not found collection image url from candy");
+    return "/404.jpeg";
   }
 }

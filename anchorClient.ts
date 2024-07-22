@@ -29,7 +29,7 @@ export async function createUser(
     const provider = createProvider(wallet, connection);
     if (!provider) return;
 
-    const program = new Program(idl, programId, provider);
+    const program = new Program(idl as anchor.Idl, programId, provider);
 
     const [userPda] = web3.PublicKey.findProgramAddressSync(
       [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
@@ -59,7 +59,7 @@ export async function changeUserProfile(
   const provider = createProvider(wallet, connection);
   if (!provider) return;
 
-  const program = new Program(idl, programId, provider);
+  const program = new Program(idl as anchor.Idl, programId, provider);
 
   const [userPda] = web3.PublicKey.findProgramAddressSync(
     [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
@@ -83,7 +83,7 @@ export async function changeUserProfile(
 
 export async function fetchUser(wallet: AnchorWallet, connection: Connection) {
   const provider = createProvider(wallet, connection);
-  const program = new Program(idl, programId, provider);
+  const program = new Program(idl as anchor.Idl, programId, provider);
 
   const [userPda] = web3.PublicKey.findProgramAddressSync(
     [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
@@ -106,7 +106,7 @@ export async function addUserCollective(
     const provider = createProvider(wallet, connection);
     if (!provider) return;
 
-    const program = new Program(idl, programId, provider);
+    const program = new Program(idl as anchor.Idl, programId, provider);
 
     const [userPda] = web3.PublicKey.findProgramAddressSync(
       [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
@@ -140,7 +140,7 @@ export async function createHarigamiPda(
     const provider = createProvider(wallet, connection);
     if (!provider) return;
 
-    const program = new Program(idl, programId, provider);
+    const program = new Program(idl as anchor.Idl, programId, provider);
 
     const _candy = new web3.PublicKey(candy);
 

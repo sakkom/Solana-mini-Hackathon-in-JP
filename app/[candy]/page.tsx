@@ -103,14 +103,21 @@ export default function Page({ params }: { params: { candy: string } }) {
   };
 
   const handleDecrypt = async () => {
+    if (!wallet.publicKey) return;
     console.log("foo");
-    const arweveTx = "q77tQHNVfQi_qbNCacGYyx7WV_ts4e3bWBkBT1pCPM0";
-    const collective = "5Udjsoum9iDzt3bTNnFjdXovTzExZSWiqeFE9BGSv3Bo";
+    const formData = new FormData();
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_ROOT}/irys/decode/${arweveTx}/${collective}/${wallet.publicKey}`,
-      { redirect: "follow" },
+    formData.append("arweaveId", "q77tQHNVfQi_qbNCacGYyx7WV_ts4e3bWBkBT1pCPM0");
+    formData.append(
+      "collective",
+      "5Udjsoum9iDzt3bTNnFjdXovTzExZSWiqeFE9BGSv3Bo",
     );
+    formData.append("user", wallet.publicKey?.toString());
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_ROOT}/irys/decode`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (!res.ok) {
       if (res.status === 401) {
