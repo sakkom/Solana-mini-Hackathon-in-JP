@@ -129,36 +129,36 @@ export async function addUserCollective(
   }
 }
 
-export async function createHarigamiPda(
-  wallet: AnchorWallet,
-  connection: Connection,
-  creators: web3.PublicKey[],
-  candy: metaplex.PublicKey,
-) {
-  try {
-    console.log("harigami pdaを作成するよ");
-    const provider = createProvider(wallet, connection);
-    if (!provider) return;
+// export async function createHarigamiPda(
+//   wallet: AnchorWallet,
+//   connection: Connection,
+//   creators: web3.PublicKey[],
+//   candy: metaplex.PublicKey,
+// ) {
+//   try {
+//     console.log("harigami pdaを作成するよ");
+//     const provider = createProvider(wallet, connection);
+//     if (!provider) return;
 
-    const program = new Program(idl as anchor.Idl, programId, provider);
+//     const program = new Program(idl as anchor.Idl, programId, provider);
 
-    const _candy = new web3.PublicKey(candy);
+//     const _candy = new web3.PublicKey(candy);
 
-    const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
-      [_candy.toBytes()],
-      program.programId,
-    );
-    console.log("harigami pda", harigamiPda.toString());
+//     const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
+//       [_candy.toBytes()],
+//       program.programId,
+//     );
+//     console.log("harigami pda", harigamiPda.toString());
 
-    return await program.methods
-      .createHarigami(creators, _candy)
-      .accounts({
-        user: wallet.publicKey,
-        harigami: harigamiPda,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .rpc();
-  } catch (err) {
-    console.error(err);
-  }
-}
+//     return await program.methods
+//       .createHarigami(creators, _candy)
+//       .accounts({
+//         user: wallet.publicKey,
+//         harigami: harigamiPda,
+//         systemProgram: anchor.web3.SystemProgram.programId,
+//       })
+//       .rpc();
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
