@@ -1,4 +1,3 @@
-import * as web3 from "@solana/web3.js";
 import { JacketCard } from "@/components/CollectiveCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

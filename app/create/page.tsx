@@ -20,7 +20,6 @@ import {
   useWallet,
 } from "@solana/wallet-adapter-react";
 import { addUserCollective, createHarigamiPda } from "@/anchorClient";
-import { PublicKey } from "@solana/web3.js";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 

@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { base64ToBlob } from "@/utils/util";
 import { fetchCandy, mintFromCandyGuard } from "@/lib/candyMachine";
 import { publicKey } from "@metaplex-foundation/umi";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const ACCEPTED_VIDEO_TYPES = ["video/mp4"];
@@ -133,7 +132,6 @@ export default function Page({ params }: { params: { candy: string } }) {
       console.log(await res.json());
     } else {
       throw new Error("server error");
-      setDecryptURL(null);
     }
   };
 
