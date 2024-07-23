@@ -124,6 +124,7 @@ export async function addUserCollective(
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
+    // .rpc();
   } catch (err) {
     console.error(err);
   }

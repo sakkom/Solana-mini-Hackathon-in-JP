@@ -1,47 +1,38 @@
+import { addUserCollective } from "@/anchorClient";
 import {
   getMetadataUri,
-  createCoreCollection,
-  createCandyMachine,
-  addItems,
+  umiHarigami,
+  // createCoreCollection,
+  // createCandyMachine,
+  createCoreCandyMachine,
+  // addItems,
 } from "@/lib/candyMachine";
 import * as metaplex from "@metaplex-foundation/umi";
 
 type harigamiData = {
-  coverImage: File;
-  title: string;
+  coverImage: File[];
 };
 
 export const createHarigami = async (
   wallet: any,
   data: harigamiData,
+  updateProgress: (progress: number) => void,
   // creator: web3.PublicKey,
 ): Promise<metaplex.PublicKey> => {
-  const coverImage: File = data.coverImage;
-  const title = data.title;
+  const coverImage = data.coverImage[0];
+  const title = "title in image";
 
-  const metaDataUri = await getMetadataUri(wallet, coverImage, title);
+  const umi = umiHarigami(wallet);
 
-  const collectionSigner = await createCoreCollection(
-    wallet,
+  const metaDataUri = await getMetadataUri(umi, coverImage, title);
+  updateProgress(1);
+
+  const candyMachineSigner = await createCoreCandyMachine(
+    umi,
     metaDataUri,
     title,
   );
-
-  const candyMachineSigner = await createCandyMachine(
-    wallet,
-    collectionSigner,
-    metaDataUri,
-  );
-
-  await addItems(wallet, candyMachineSigner); //test 10
-
-  console.log(
-    `
-      Important Account \n
-      Core Collection: ${collectionSigner?.publicKey} \n
-      Candy Machine: ${candyMachineSigner?.publicKey} \n
-    `,
-  );
+  updateProgress(2);
 
   return candyMachineSigner.publicKey;
 };

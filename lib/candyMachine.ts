@@ -11,6 +11,7 @@ import {
   PublicKey,
   createGenericFileFromBrowserFile,
   publicKey,
+  Umi,
 } from "@metaplex-foundation/umi";
 import {
   mplCore,
@@ -68,18 +69,25 @@ function umiIdentityProvider(wallet: any) {
   return umi;
 }
 
+export function umiHarigami(wallet: any) {
+  const umi = createUmi(web3.clusterApiUrl("devnet"))
+    .use(walletAdapterIdentity(wallet))
+    .use(irysUploader())
+    .use(mplCore())
+    .use(mplCoreCandyMachine());
+  return umi;
+}
+
 export async function getMetadataUri(
-  wallet: any,
+  umi: Umi,
   coverImage: File,
   title: string,
 ) {
-  const umi = umiIdentityProvider(wallet);
-  umi.use(irysUploader());
-
-  const genericFile = await createGenericFileFromBrowserFile(coverImage); //content type
+  const genericFile = await createGenericFileFromBrowserFile(coverImage);
+  //content type
 
   const [imageUri] = await umi.uploader.upload([genericFile]);
-
+  // console.log("署名: imageUri");
   const uri = await umi.uploader.uploadJson({
     name: title,
     description: "Generative art on Solana.",
@@ -93,45 +101,31 @@ export async function getMetadataUri(
       },
     ],
   });
+  // console.log("署名: uri");
 
   return uri;
 }
 
-export async function createCoreCollection(
-  wallet: any,
+export async function createCollectionIx(
+  umi: Umi,
+  collectionSigner: KeypairSigner,
   uri: string,
   title: string,
-): Promise<KeypairSigner> {
-  const umi = umiIdentityProvider(wallet);
-  umi.use(mplCore());
-
-  const collectionSigner = generateSigner(umi);
-
-  // const name = metaData.name;
-  const { signature } = await createCollectionV1(umi, {
+) {
+  return createCollectionV1(umi, {
     collection: collectionSigner,
     name: title, //nameをuri.nameと同一にする　これがCandy Machineの名前となるから。
     uri: uri,
-  }).sendAndConfirm(umi);
-
-  console.log(`Create Collection! tx: ${base58.deserialize(signature)[0]}`);
-
-  return collectionSigner;
+  });
 }
 
-export async function createCandyMachine(
-  wallet: any,
+export async function createCandyIx(
+  umi: Umi,
+  candyMachineSigner: KeypairSigner,
   collectionSigner: KeypairSigner,
   uri: string,
-): Promise<KeypairSigner> {
-  const umi = umiIdentityProvider(wallet);
-  umi.use(mplCoreCandyMachine());
-  // if (!collectionSigner) throw Error("collection is null");
-
-  const candyMachineSigner = generateSigner(umi);
-
-  //リファクタリング
-  const createIx = await create(umi, {
+) {
+  return create(umi, {
     candyMachine: candyMachineSigner,
     collection: collectionSigner.publicKey,
     collectionUpdateAuthority: umi.identity,
@@ -149,50 +143,67 @@ export async function createCandyMachine(
       botTax: some({ lamports: sol(0.001), lastInstruction: true }),
     },
   });
-
-  const { signature } = await createIx.sendAndConfirm(umi, options);
-
-  const tx = base58.deserialize(signature)[0];
-  console.log(
-    `Create Candy Machine! tx:  ${tx}\ Candy machine id: ${candyMachineSigner.publicKey}`,
-  );
-
-  return candyMachineSigner;
 }
 
-export async function addItems(
-  wallet: any,
-  candyMachine: KeypairSigner,
-  // quantity: number,
-): Promise<string | null> {
-  try {
-    const umi = umiIdentityProvider(wallet);
-    umi.use(mplCoreCandyMachine());
+export async function createAddConfigIx(
+  umi: Umi,
+  candyMachineSigner: KeypairSigner,
+) {
+  return addConfigLines(umi, {
+    candyMachine: candyMachineSigner.publicKey,
+    index: 0,
+    configLines: [
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+      { name: "", uri: "" },
+    ],
+  });
+}
 
-    await addConfigLines(umi, {
-      candyMachine: candyMachine.publicKey,
-      index: 0,
-      configLines: [
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-        { name: "", uri: "" },
-      ],
-    }).sendAndConfirm(umi, options);
+export async function createCoreCandyMachine(
+  umi: Umi,
+  uri: string,
+  title: string,
+) {
+  const collectionSigner = generateSigner(umi);
+  const candyMachineSigner = generateSigner(umi);
 
-    console.log("add config");
+  const collectionIx = await createCollectionIx(
+    umi,
+    collectionSigner,
+    uri,
+    title,
+  );
+  const candyIx = await createCandyIx(
+    umi,
+    candyMachineSigner,
+    collectionSigner,
+    uri,
+  );
+  const addConfigTx = await createAddConfigIx(umi, candyMachineSigner);
 
-    return "補充しました";
-  } catch (error) {
-    console.log("Error adding items to the Candy Machine");
-    return null;
-  }
+  let builder = transactionBuilder()
+    .add(collectionIx)
+    .add(candyIx)
+    .add(addConfigTx);
+
+  const { signature } = await builder.sendAndConfirm(umi);
+  console.log(`corecandy tx: ${base58.deserialize(signature)[0]}`);
+  // console.log(
+  //   `
+  //     Important Account \n
+  //     Core Collection: ${collectionSigner?.publicKey} \n
+  //     Candy Machine: ${candyMachineSigner?.publicKey} \n
+  //   `,
+  // );
+  return candyMachineSigner;
 }
 
 export async function mintFromCandyGuard(
