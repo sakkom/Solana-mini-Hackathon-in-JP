@@ -21,7 +21,7 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { addUserCollective } from "@/anchorClient";
+import { addUserCollective, createHarigamiPda } from "@/anchorClient";
 import { useState } from "react";
 import { PreviewImages } from "@/components/PreviewImages";
 import { JacketCube } from "@/components/JacketCube";
@@ -81,7 +81,7 @@ export default function Page() {
   const handleCreateHarigami = async (
     values: z.infer<typeof harigamiFormSchema>,
   ) => {
-    if (!anchorWallet) return;
+    if (!anchorWallet || !wallet.publicKey) return;
     console.log(values.coverImage);
 
     setShow(false);
@@ -92,6 +92,15 @@ export default function Page() {
       console.log("create candy");
       await addUserCollective(anchorWallet, connection, candy);
       setProgress(3);
+
+      const result = await createHarigamiPda(
+        anchorWallet,
+        connection,
+        [wallet.publicKey],
+        candy,
+      );
+      console.log(result);
+      setProgress(4);
 
       setTimeout(() => {
         router.replace("/profile");
@@ -109,13 +118,14 @@ export default function Page() {
       { title: "メタデータ作成" },
       { title: "キャンディマシン作成" },
       { title: "ユーザー情報更新" },
+      { title: "張紙作成" },
     ];
 
     return (
       <Card className="bg-gray-900">
         <CardContent>
           <div className="flex justify-center text-white">
-            <h3>{progress < 3 ? "waiting....." : "complete!"}</h3>
+            <h3>{progress < 4 ? "waiting....." : "complete!"}</h3>
           </div>
           <ul>
             {steps.map((step, index) => (

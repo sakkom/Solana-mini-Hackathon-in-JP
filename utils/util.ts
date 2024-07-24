@@ -7,6 +7,8 @@ import {
   mplCandyMachine as mplCoreCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { AnchorWallet } from "@solana/wallet-adapter-react";
+import { fetchUser, setProgram } from "@/anchorClient";
 
 export const iconOptions = [
   { value: "0", src: "/icons/guest.png", label: "guest" },
@@ -68,8 +70,9 @@ export async function fetchJacket(candy: string) {
 
   try {
     const cm = await fetchCandyMachine(umi, publicKey(candy));
-
+    console.log("foo");
     const col = await fetchCollectionV1(umi, cm.collectionMint);
+    console.log("foofoo");
 
     const res = await fetch(col.uri);
 
@@ -81,5 +84,34 @@ export async function fetchJacket(candy: string) {
   } catch (err) {
     console.error("not found collection image url from candy");
     return "/404.jpeg";
+  }
+}
+
+export async function canAddMedia(
+  wallet: AnchorWallet,
+  connection: web3.Connection,
+  candyPrams: string,
+) {
+  try {
+    const candyPubkey = new web3.PublicKey(candyPrams);
+
+    const program = setProgram(wallet, connection);
+
+    const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
+      [candyPubkey.toBuffer()],
+      program.programId,
+    );
+
+    const harigami: any = await program.account.harigami.fetch(harigamiPda);
+    const creators = harigami.creators;
+
+    const isAuthority = creators.some(
+      (creator: web3.PublicKey) =>
+        creator.toString() === wallet.publicKey.toString(),
+    );
+
+    return isAuthority;
+  } catch (err) {
+    console.error("not canAddMedia method");
   }
 }

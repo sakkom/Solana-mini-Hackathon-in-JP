@@ -43,6 +43,14 @@
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": [{ "name": "creators", "type": { "vec": "publicKey" } }]
+    },
+    {
+      "name": "addMedia",
+      "accounts": [
+        { "name": "candy", "isMut": false, "isSigner": false },
+        { "name": "harigami", "isMut": true, "isSigner": false }
+      ],
+      "args": [{ "name": "content", "type": "string" }]
     }
   ],
   "accounts": [
