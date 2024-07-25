@@ -115,3 +115,28 @@ export async function canAddMedia(
     console.error("not canAddMedia method");
   }
 }
+
+export async function fetchHarigamiContent(
+  wallet: AnchorWallet,
+  connection: web3.Connection,
+  candyPrams: string,
+) {
+  try {
+    const candyPubkey = new web3.PublicKey(candyPrams);
+
+    const program = setProgram(wallet, connection);
+
+    const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
+      [candyPubkey.toBuffer()],
+      program.programId,
+    );
+
+    const harigami: any = await program.account.harigami.fetch(harigamiPda);
+    const contents = harigami.contents;
+    // console.log(contents);
+
+    return contents;
+  } catch (err) {
+    console.error("not canAddMedia method");
+  }
+}

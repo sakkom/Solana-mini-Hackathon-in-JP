@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { addMedia } from "@/anchorClient";
 
 const ACCEPTED_VIDEO_TYPES = ["video/mp4"];
 
@@ -44,23 +45,6 @@ export default function Page({ params }: { params: { candy: string } }) {
     resolver: zodResolver(harigamiFormSchema),
   });
 
-  const handleFilePreview = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file instanceof File) {
-        const url = URL.createObjectURL(file);
-        setPreview(url);
-      }
-    }
-  };
-
-  const handleUploadIrys = async (
-    values: z.infer<typeof harigamiFormSchema>,
-  ) => {
-    const content = values.content;
-    console.log(content);
-  };
-
   useEffect(() => {
     if (!anchorWallet) return;
 
@@ -74,6 +58,40 @@ export default function Page({ params }: { params: { candy: string } }) {
 
     checkAuthority();
   }, []);
+
+  const handleFilePreview = (e: any) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file instanceof File) {
+        const url = URL.createObjectURL(file);
+        setPreview(url);
+      }
+    }
+  };
+
+  const handleUploadIrys = async (
+    values: z.infer<typeof harigamiFormSchema>,
+  ) => {
+    if (!anchorWallet) return;
+
+    const formData = new FormData();
+    formData.append("content", values.content);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ROOT}/irys/upload`,
+        { method: "POST", body: formData },
+      );
+
+      if (res.ok) {
+        const arweaveId = await res.json();
+        await addMedia(anchorWallet, connection, candy, arweaveId);
+        router.push(`/view/${candy}/media`);
+      }
+    } catch (err) {
+      console.error("not working handleUploadIrys");
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-screen">

@@ -241,7 +241,6 @@ export async function fetchCandy(
   const umi = umiIdentityProvider(wallet);
   umi.use(mplCoreCandyMachine());
 
-  console.log("Fol");
   const CM = await fetchCandyMachine(umi, publicKey(candy_str));
 
   return CM;

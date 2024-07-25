@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   const irys = await getIrys();
   const formData = await request.formData();
   const video = formData.get("content");
-  const tags = [{ name: "Content-Type", value: "text/plain" }];
+  const tags = [{ name: "Content-Type", value: "video/mp4" }];
 
   if (video && video instanceof File) {
     const videoArrayBuffer = await video.arrayBuffer();
@@ -20,8 +20,7 @@ export async function POST(request: Request) {
     const encrypted = CryptoJS.AES.encrypt(wordArray, secret_key).toString();
 
     const receipt = await irys.upload(encrypted, { tags: tags });
-    console.log(`File uploaded ===> https://gateway.irys.xyz/${receipt.id}`);
+    // console.log(`File uploaded ===> https://gateway.irys.xyz/${receipt.id}`);
+    return Response.json(receipt.id);
   }
-
-  return Response.json("process video");
 }

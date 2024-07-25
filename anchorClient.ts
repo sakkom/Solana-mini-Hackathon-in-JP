@@ -175,3 +175,30 @@ export async function createHarigamiPda(
     console.error(err);
   }
 }
+
+export async function addMedia(
+  wallet: AnchorWallet,
+  connection: Connection,
+  candyParams: string,
+  arweaveId: string,
+) {
+  try {
+    const program = setProgram(wallet, connection);
+    const candyPubkey = new web3.PublicKey(candyParams);
+
+    const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
+      [candyPubkey.toBuffer()],
+      program.programId,
+    );
+
+    return await program.methods
+      .addMedia(arweaveId)
+      .accounts({
+        harigami: harigamiPda,
+        candy: candyPubkey,
+      })
+      .rpc();
+  } catch (err) {
+    console.error("not working addMedia", err);
+  }
+}
