@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppWalletProvider } from "@/context/AppWalletProvider";
 import { AppBar } from "@/components/AppBar";
 import { BackGround } from "@/components/BackGround";
-
+import { ReactQueryClientProvider } from "@/context/QueryClientProvider";
 const poppins = Poppins({ weight: "600", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,20 +18,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <AppWalletProvider>
-        <body
-          className={`${poppins.className} relative min-h-screen`}
-          style={{ margin: 0, padding: 0 }}
-        >
-          <BackGround />
-          <div className="relative z-10 min-h-screen">
-            <AppBar />
+    <ReactQueryClientProvider>
+      <html lang="en">
+        <AppWalletProvider>
+          <body
+            className={`${poppins.className} relative min-h-screen`}
+            style={{ margin: 0, padding: 0 }}
+          >
+            <BackGround />
+            <div className="relative z-10 min-h-screen">
+              <AppBar />
 
-            {children}
-          </div>
-        </body>
-      </AppWalletProvider>
-    </html>
+              {children}
+            </div>
+          </body>
+        </AppWalletProvider>
+      </html>
+    </ReactQueryClientProvider>
   );
 }

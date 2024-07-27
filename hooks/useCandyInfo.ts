@@ -9,7 +9,7 @@ export const useCandyInfo = (wallet: any, candyParams: string) => {
     if (!wallet) return;
 
     const fetchCandyInfo = async () => {
-      const res = await fetchCandy(wallet, candyParams);
+      const res = await fetchCandy(candyParams);
       setCandyMachine(res);
     };
 

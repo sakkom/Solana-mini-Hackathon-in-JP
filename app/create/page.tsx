@@ -93,14 +93,24 @@ export default function Page() {
       await addUserCollective(anchorWallet, connection, candy);
       setProgress(3);
 
-      const result = await createHarigamiPda(
+      await createHarigamiPda(
         anchorWallet,
         connection,
         [wallet.publicKey],
         candy,
       );
-      console.log(result);
       setProgress(4);
+
+      const formData = new FormData();
+      formData.append("candy", candy.toString());
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ROOT}/harigami`, {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        setProgress(5);
+      }
 
       setTimeout(() => {
         router.replace("/profile");
@@ -119,13 +129,14 @@ export default function Page() {
       { title: "キャンディマシン作成" },
       { title: "ユーザー情報更新" },
       { title: "張紙作成" },
+      { title: "張紙コレクション更新" },
     ];
 
     return (
       <Card className="bg-gray-900">
         <CardContent>
           <div className="flex justify-center text-white">
-            <h3>{progress < 4 ? "waiting....." : "complete!"}</h3>
+            <h3>{progress < 5 ? "waiting....." : "complete!"}</h3>
           </div>
           <ul>
             {steps.map((step, index) => (

@@ -8,19 +8,20 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { InitialCard } from "@/components/InitialCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAssetsByYou } from "@/lib/candyMachine";
+import { AssetWithHarigami, fetchAssetsByYou } from "@/utils/util";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { CollectiveCard } from "@/components/CollectiveCard";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { UserAsset } from "@/components/UserAssets";
 
 export default function Page() {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const [user, setUser] = useState<any>();
   const [collective, setCollective] = useState<web3.PublicKey[]>();
-  const [assets, setAssets] = useState<AssetV1[]>();
+  const [assets, setAssets] = useState<AssetWithHarigami[]>();
 
   useEffect(() => {
     if (!wallet || !connection) return;
@@ -48,7 +49,7 @@ export default function Page() {
     if (!wallet) return;
 
     const fetchAssets = async () => {
-      const res = await fetchAssetsByYou(wallet.publicKey);
+      const res = await fetchAssetsByYou(wallet, connection, wallet.publicKey);
       setAssets(res);
     };
 
@@ -89,10 +90,8 @@ export default function Page() {
               <TabsContent value="assets">
                 {assets && (
                   <div>
-                    {assets.map((asset: AssetV1, index: any) => (
-                      <div key={index}>
-                        <div>{asset.publicKey}</div>
-                      </div>
+                    {assets.map((harigami: AssetWithHarigami, index: any) => (
+                      <UserAsset key={index} harigami={harigami} />
                     ))}
                   </div>
                 )}

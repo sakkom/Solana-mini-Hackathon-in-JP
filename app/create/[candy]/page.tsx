@@ -86,7 +86,7 @@ export default function Page({ params }: { params: { candy: string } }) {
       if (res.ok) {
         const arweaveId = await res.json();
         await addMedia(anchorWallet, connection, candy, arweaveId);
-        router.push(`/view/${candy}/media`);
+        router.push(`/view/${candy}`);
       }
     } catch (err) {
       console.error("not working handleUploadIrys");

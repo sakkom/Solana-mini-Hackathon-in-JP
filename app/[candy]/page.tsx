@@ -136,7 +136,7 @@ export default function Page({ params }: { params: { candy: string } }) {
   };
 
   const handleMint = async () => {
-    const res = await fetchCandy(anchorWallet, params.candy); //walletでもanchorwalletでも動く
+    const res = await fetchCandy(params.candy); //walletでもanchorwalletでも動く
     const collectionMint = res.collectionMint;
     await mintFromCandyGuard(
       anchorWallet,

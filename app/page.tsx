@@ -1,12 +1,13 @@
 "use client";
 
+import * as web3 from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import {
   useConnection,
   useWallet,
   useAnchorWallet,
 } from "@solana/wallet-adapter-react";
-import { fetchUser } from "@/anchorClient";
+import { fetchHarigamiCollection, fetchUser } from "@/anchorClient";
 import { InitialCard } from "@/components/InitialCard";
 
 export default function Home() {

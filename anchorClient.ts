@@ -6,12 +6,16 @@ import { Connection } from "@solana/web3.js";
 import idl from "@/idl.json";
 import { Program } from "@coral-xyz/anchor";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 export const programId = new anchor.web3.PublicKey(
   "H6nb14ncRqiv25UMFk8N9r1bsQEUhkHjjtau9oYdWWaG",
 );
 
-export function setProgram(wallet: AnchorWallet, connection: Connection) {
+export function setProgram(
+  wallet: AnchorWallet | NodeWallet,
+  connection: Connection,
+) {
   const provider = new anchor.AnchorProvider(connection, wallet, {
     commitment: "confirmed",
   });
@@ -93,8 +97,7 @@ export async function changeUserProfile(
 }
 
 export async function fetchUser(wallet: AnchorWallet, connection: Connection) {
-  const provider = createProvider(wallet, connection);
-  const program = new Program(idl as anchor.Idl, programId, provider);
+  const program = setProgram(wallet, connection);
 
   const [userPda] = web3.PublicKey.findProgramAddressSync(
     [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
@@ -200,5 +203,26 @@ export async function addMedia(
       .rpc();
   } catch (err) {
     console.error("not working addMedia", err);
+  }
+}
+
+export async function fetchHarigamiCollection(
+  wallet: AnchorWallet,
+  connection: Connection,
+) {
+  try {
+    const program = setProgram(wallet, connection);
+
+    const harigamiAccount = new web3.PublicKey(
+      "AeNujhqxWPByB71677S4wjeCHtk2H2vDyjfoesTcw5yY",
+    );
+
+    const data =
+      await program.account.harigamiCollection.fetch(harigamiAccount);
+    const harigamiCollection = data.collection;
+
+    return harigamiCollection as any;
+  } catch (err) {
+    console.error("not working fetchHarigamiCollection", err);
   }
 }

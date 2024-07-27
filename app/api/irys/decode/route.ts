@@ -1,5 +1,10 @@
 import CryptoJS from "crypto-js";
 import { hasCollectiveNFT } from "@/utils/util";
+import * as web3 from "@solana/web3.js";
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
+
+const DEVNET = web3.clusterApiUrl("devnet");
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -7,7 +12,13 @@ export async function POST(request: Request) {
   const collective = formData.get("collective") as string;
   const user = formData.get("user") as string;
 
-  if (!(await hasCollectiveNFT(user, collective))) {
+  const private_key = process.env.PRIVATE_KEY || "";
+  if (!private_key) throw new Error("not a private key");
+  const keypair = web3.Keypair.fromSecretKey(bs58.decode(private_key));
+  const connection = new web3.Connection(DEVNET, "confirmed");
+  const wallet = new NodeWallet(keypair);
+
+  if (!(await hasCollectiveNFT(wallet, connection, user, collective))) {
     return new Response("Let's mint harigami", { status: 401 });
   }
 

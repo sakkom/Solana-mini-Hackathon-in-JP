@@ -51,6 +51,22 @@
         { "name": "harigami", "isMut": true, "isSigner": false }
       ],
       "args": [{ "name": "content", "type": "string" }]
+    },
+    {
+      "name": "initializeHarigamiCollection",
+      "accounts": [
+        { "name": "signer", "isMut": true, "isSigner": true },
+        { "name": "harigamiCollection", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "addHarigamiCollection",
+      "accounts": [
+        { "name": "harigamiCollection", "isMut": true, "isSigner": false }
+      ],
+      "args": [{ "name": "candy", "type": "publicKey" }]
     }
   ],
   "accounts": [
@@ -73,6 +89,13 @@
           { "name": "creators", "type": { "vec": "publicKey" } },
           { "name": "contents", "type": { "vec": "string" } }
         ]
+      }
+    },
+    {
+      "name": "HarigamiCollection",
+      "type": {
+        "kind": "struct",
+        "fields": [{ "name": "collection", "type": { "vec": "publicKey" } }]
       }
     }
   ]

@@ -6,6 +6,7 @@ import { Card } from "./ui/card";
 import { fetchJacket } from "@/utils/util";
 import Link from "next/link";
 import { publicKey } from "@metaplex-foundation/umi";
+import { useQuery } from "@tanstack/react-query";
 
 interface CollectiveCartProps {
   collective: web3.PublicKey[];
@@ -28,22 +29,17 @@ interface JacketCardProps {
 }
 
 export const JacketCard: FC<JacketCardProps> = ({ candy }) => {
-  const [imgUrl, setImgUrl] = useState<string>();
-  const [status, setStatus] = useState<string>("loading");
-
-  useEffect(() => {
-    const fetchJacketImage = async () => {
-      const res = await fetchJacket(candy);
-      setImgUrl(res);
-      setStatus("loaded");
-    };
-
-    fetchJacketImage();
-  }, [candy]);
+  const { data: imgUrl, status } = useQuery({
+    queryKey: ["jacket", candy],
+    queryFn: () => fetchJacket(candy),
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+  });
 
   return (
     <div>
-      {status === "loaded" ? (
+      {status === "success" ? (
         <div>
           {" "}
           <Link href={`/view/${candy.toString()}`}>

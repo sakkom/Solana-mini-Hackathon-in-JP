@@ -1,14 +1,20 @@
 import * as web3 from "@solana/web3.js";
-import { fetchAssetsByYou } from "@/lib/candyMachine";
-import { AssetV1, fetchCollectionV1 } from "@metaplex-foundation/mpl-core";
-import { publicKey } from "@metaplex-foundation/umi";
 import {
+  AssetV1,
+  fetchAssetsByOwner,
+  fetchCollectionV1,
+} from "@metaplex-foundation/mpl-core";
+import { PublicKey, publicKey } from "@metaplex-foundation/umi";
+import {
+  CandyMachine,
   fetchCandyMachine,
   mplCandyMachine as mplCoreCandyMachine,
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
-import { fetchUser, setProgram } from "@/anchorClient";
+import { fetchHarigamiCollection, fetchUser, setProgram } from "@/anchorClient";
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+import { fetchCandy } from "@/lib/candyMachine";
 
 export const iconOptions = [
   { value: "0", src: "/icons/guest.png", label: "guest" },
@@ -50,12 +56,17 @@ export function base64ToBlob(base64: any, mimeType: any) {
   return new Blob([byteArray], { type: mimeType });
 }
 
-export async function hasCollectiveNFT(user: string, collective: string) {
-  const assets = await fetchAssetsByYou(user);
+export async function hasCollectiveNFT(
+  wallet: AnchorWallet | NodeWallet,
+  connection: web3.Connection,
+  user: string,
+  collective: string,
+) {
+  const assets = await fetchAssetsByYou(wallet, connection, user);
+  if (!assets) throw new Error("not user assets");
   try {
     const hasCollection = assets.some(
-      (asset: AssetV1) =>
-        asset.updateAuthority.address === publicKey(collective),
+      ({ asset }) => asset.updateAuthority.address === publicKey(collective),
     );
     return hasCollection;
   } catch (err) {
@@ -64,17 +75,41 @@ export async function hasCollectiveNFT(user: string, collective: string) {
 }
 
 export async function fetchJacket(candy: string) {
-  const umi = createUmi(web3.clusterApiUrl("devnet")).use(
-    mplCoreCandyMachine(),
-  );
+  // const umi = createUmi(web3.clusterApiUrl("devnet")).use(
+  //   mplCoreCandyMachine(),
+  // ); //shftにするとはやくなる
+  const umi = createUmi(
+    "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
+  ).use(mplCoreCandyMachine()); //shftにするとはやくなる
 
   try {
-    const cm = await fetchCandyMachine(umi, publicKey(candy));
-    console.log("foo");
-    const col = await fetchCollectionV1(umi, cm.collectionMint);
-    console.log("foofoo");
+    const collectionMint = (await fetchCandyMachine(umi, publicKey(candy)))
+      .collectionMint;
+    const col = await fetchCollectionV1(umi, collectionMint);
 
     const res = await fetch(col.uri);
+
+    const metaData = await res.json();
+
+    const image = metaData.image;
+
+    return image;
+  } catch (err) {
+    console.error("not found collection image url from candy");
+    return "/404.jpeg";
+  }
+}
+
+export async function fetchJacketFromAsset(uri: string) {
+  // const umi = createUmi(web3.clusterApiUrl("devnet")).use(
+  //   mplCoreCandyMachine(),
+  // ); //shftにするとはやくなる
+  const umi = createUmi(
+    "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
+  ).use(mplCoreCandyMachine()); //shftにするとはやくなる
+
+  try {
+    const res = await fetch(uri);
 
     const metaData = await res.json();
 
@@ -138,5 +173,53 @@ export async function fetchHarigamiContent(
     return contents;
   } catch (err) {
     console.error("not canAddMedia method");
+  }
+}
+
+export interface AssetWithHarigami {
+  asset: AssetV1;
+  candy: PublicKey; // Candy Machine の公開鍵
+}
+
+export async function fetchAssetsByYou(
+  wallet: AnchorWallet | NodeWallet,
+  connection: web3.Connection,
+  owner: web3.PublicKey | string,
+) {
+  try {
+    const umi = createUmi(web3.clusterApiUrl("devnet"));
+    const assets = await fetchAssetsByOwner(umi, publicKey(owner), {
+      skipDerivePlugins: false,
+    });
+
+    const harigamies = await fetchHarigamiCollection(wallet, connection);
+
+    const harigamiCollection = await Promise.all(
+      harigamies.map(async (harigami: web3.PublicKey) => {
+        const harigamiObj: CandyMachine = await fetchCandy(harigami.toString());
+        const collectionMint = harigamiObj.collectionMint;
+        return { harigami, collectionMint };
+      }),
+    );
+
+    console.log(harigamiCollection);
+
+    const assetsWithHarigami: AssetWithHarigami[] = assets
+      .map((asset) => {
+        const foundHarigami = harigamiCollection.find(
+          ({ collectionMint }) =>
+            collectionMint.toString() === asset.updateAuthority.address,
+        );
+        return {
+          asset,
+          candy: foundHarigami ? foundHarigami.harigami : null,
+        };
+      })
+      .filter((item) => item.candy !== null);
+
+    console.log(assetsWithHarigami);
+    return assetsWithHarigami;
+  } catch (err) {
+    console.error("not working fetchAssetsByYou");
   }
 }

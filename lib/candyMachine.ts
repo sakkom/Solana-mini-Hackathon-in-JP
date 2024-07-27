@@ -30,6 +30,7 @@ import { setComputeUnitLimit } from "@metaplex-foundation/mpl-toolbox";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
 import { irysUploader } from "@metaplex-foundation/umi-uploader-irys";
+import { fetchHarigamiCollection } from "@/anchorClient";
 
 interface Attributes {
   trait_type?: string;
@@ -234,23 +235,11 @@ export async function mintFromCandyGuard(
   return assetSigner;
 }
 
-export async function fetchCandy(
-  wallet: any,
-  candy_str: string,
-): Promise<CandyMachine> {
-  const umi = umiIdentityProvider(wallet);
+export async function fetchCandy(candy_str: string): Promise<CandyMachine> {
+  const umi = createUmi(web3.clusterApiUrl("devnet"));
   umi.use(mplCoreCandyMachine());
 
   const CM = await fetchCandyMachine(umi, publicKey(candy_str));
 
   return CM;
-}
-
-export async function fetchAssetsByYou(owner: web3.PublicKey | string) {
-  const umi = createUmi(web3.clusterApiUrl("devnet"));
-  const assets = await fetchAssetsByOwner(umi, publicKey(owner), {
-    skipDerivePlugins: false,
-  });
-
-  return assets;
 }
