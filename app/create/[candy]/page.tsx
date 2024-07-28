@@ -90,11 +90,11 @@ export default function Page({ params }: { params: { candy: string } }) {
       //4.5mb 回避
       const blob: PutBlobResult = await upload(file.name, file, {
         access: "public",
-        handleUploadUrl: `${process.env.NEXT_PUBLIC_API_ROOT}/api/blob`,
+        handleUploadUrl: `${process.env.NEXT_PUBLIC_API_ROOT}/blob`,
       });
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ROOT}/api/irys/upload`,
+        `${process.env.NEXT_PUBLIC_API_ROOT}/irys/upload`,
         {
           method: "POST",
           body: JSON.stringify({ uri: blob.url, type: blob.contentType }),
