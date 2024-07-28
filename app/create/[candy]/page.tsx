@@ -20,6 +20,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { addMedia } from "@/anchorClient";
+import { upload } from "@vercel/blob/client";
+import { PutBlobResult } from "@vercel/blob";
 
 const ACCEPTED_FILE_TYPES = ["video/mp4", "image/gif"];
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -82,23 +84,31 @@ export default function Page({ params }: { params: { candy: string } }) {
 
     setShow(false);
 
-    const formData = new FormData();
-    formData.append("content", values.content);
+    const file = values.content;
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ROOT}/irys/upload`,
-        { method: "POST", body: formData },
+      //4.5mb 回避
+      const blob: PutBlobResult = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: `${process.env.NEXT_PUBLIC_API_ROOT}/api/blob`,
+      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ROOT}/api/irys/upload`,
+        {
+          method: "POST",
+          body: JSON.stringify({ uri: blob.url, type: blob.contentType }),
+        },
       );
 
-      if (res.ok) {
+      if (response.ok) {
         setProgress(1);
-        const arweaveId = await res.json();
+        const arweaveId = await response.json();
         await addMedia(anchorWallet, candy, arweaveId);
         setProgress(2);
         setTimeout(() => {
           router.push(`/view/${candy}/media`);
-        }, 3000);
+        }, 7000);
       }
     } catch (err) {
       console.error("not working handleUploadIrys");
