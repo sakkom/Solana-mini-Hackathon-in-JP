@@ -1,12 +1,12 @@
 "use client";
 
 import * as web3 from "@solana/web3.js";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { Card } from "./ui/card";
 import { fetchJacket } from "@/utils/util";
 import Link from "next/link";
-import { publicKey } from "@metaplex-foundation/umi";
 import { useQuery } from "@tanstack/react-query";
+import { JacketCube } from "./JacketCube";
 
 interface CollectiveCartProps {
   collective: web3.PublicKey[];
@@ -29,7 +29,7 @@ interface JacketCardProps {
 }
 
 export const JacketCard: FC<JacketCardProps> = ({ candy }) => {
-  const { data: imgUrl, status } = useQuery({
+  const { data: imgUrls, status } = useQuery({
     queryKey: ["jacket", candy],
     queryFn: () => fetchJacket(candy),
     staleTime: 5 * 60 * 1000,
@@ -43,10 +43,8 @@ export const JacketCard: FC<JacketCardProps> = ({ candy }) => {
         <div>
           {" "}
           <Link href={`/view/${candy.toString()}`}>
-            <Card className="bg-transparent p-3 ">
-              {imgUrl && (
-                <img src={imgUrl} className="aspect-square object-cover" />
-              )}
+            <Card className="bg-transparent p-3 bg-black">
+              {imgUrls && <JacketCube urls={imgUrls} />}
             </Card>
           </Link>
         </div>

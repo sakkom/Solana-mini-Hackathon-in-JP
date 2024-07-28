@@ -2,36 +2,30 @@
 
 import * as web3 from "@solana/web3.js";
 import { useEffect, useState } from "react";
-import { useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
-import { fetchUser } from "@/anchorClient";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { setProgram } from "@/anchorClient";
 import { ProfileCard } from "@/components/ProfileCard";
 import { AssetWithHarigami, fetchAssetsByYou } from "@/utils/util";
-import { useRouter } from "next/navigation";
 import { ProfileTab } from "@/components/ProfileTab";
 
-export default function Page() {
-  const router = useRouter();
+export default function Page({ params }: { params: { userPda: string } }) {
+  const userPda = params.userPda;
   const wallet = useAnchorWallet();
-  const { connection } = useConnection();
   const [user, setUser] = useState<any>();
   const [collective, setCollective] = useState<web3.PublicKey[]>();
   const [assets, setAssets] = useState<AssetWithHarigami[]>();
 
   useEffect(() => {
-    if (!wallet || !connection) return;
+    if (!wallet) return;
 
-    const fetchUserPda = async () => {
-      try {
-        const user = await fetchUser(wallet);
-        setUser(user);
-      } catch (err) {
-        // console.log("pdaが存在していません");
-        router.push("/");
-      }
-    };
+    (async () => {
+      const program = setProgram(wallet);
 
-    fetchUserPda();
-  }, [wallet, connection]);
+      const userProfile = await program.account.userProfile.fetch(userPda);
+
+      setUser(userProfile);
+    })();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -41,15 +35,17 @@ export default function Page() {
   }, [user]);
 
   useEffect(() => {
-    if (!wallet) return;
+    if (!wallet || !user) return;
+
+    const owner = user.authority.toString();
 
     const fetchAssets = async () => {
-      const res = await fetchAssetsByYou(wallet, wallet.publicKey);
+      const res = await fetchAssetsByYou(wallet, owner);
       setAssets(res);
     };
 
     fetchAssets();
-  }, [wallet, connection]);
+  }, [wallet, user]);
 
   return (
     <div className="flex justify-center ">

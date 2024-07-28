@@ -75,6 +75,7 @@
       "type": {
         "kind": "struct",
         "fields": [
+          { "name": "authority", "type": "publicKey" },
           { "name": "name", "type": "string" },
           { "name": "genre", "type": "u8" },
           { "name": "candies", "type": { "vec": "publicKey" } }

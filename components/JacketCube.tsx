@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -15,6 +15,8 @@ interface JacketCubeProps {
 }
 
 export const JacketCube: React.FC<JacketCubeProps> = ({ urls }) => {
+  if (urls.length < 0) <div>...</div>;
+
   return (
     <>
       <Swiper
@@ -30,7 +32,7 @@ export const JacketCube: React.FC<JacketCubeProps> = ({ urls }) => {
         modules={[EffectCube, Pagination]}
         className="mySwiper"
       >
-        {urls.map((url, index) => (
+        {urls?.map((url, index) => (
           <SwiperSlide key={index}>
             <img src={url} className="rounded-sm aspect-square object-cover" />
           </SwiperSlide>

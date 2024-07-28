@@ -1,6 +1,6 @@
 "use client";
 
-import { number, z } from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -16,23 +16,21 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { createHarigami } from "@/actions/createHarigami";
-import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
+import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { addUserCollective, createHarigamiPda } from "@/anchorClient";
 import { useState } from "react";
 import { PreviewImages } from "@/components/PreviewImages";
 import { JacketCube } from "@/components/JacketCube";
 import { useRouter } from "next/navigation";
 
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+];
 
 const harigamiFormSchema = z.object({
-  // coverImage: z.custom<FileList>().refine((files) => 0 < files.length, {
-  //   message: "ファイルをアップロードしてください",
-  // }),
   coverImage: z
     .unknown()
     .transform((value) => {
@@ -43,14 +41,20 @@ const harigamiFormSchema = z.object({
     })
     .refine((files) => files.length > 0 && files.length <= 4, {
       message: "1~4の画像を選択してください",
-    }),
+    })
+    .refine(
+      (files) =>
+        files.every((file) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      {
+        message: "JPEG, JPG, PNG, GIFが可能",
+      },
+    ),
 });
 
 export default function Page() {
   const router = useRouter();
   const wallet = useWallet();
   const anchorWallet = useAnchorWallet();
-  const { connection } = useConnection();
   const form = useForm<z.infer<typeof harigamiFormSchema>>({
     resolver: zodResolver(harigamiFormSchema),
   });
@@ -82,7 +86,7 @@ export default function Page() {
     values: z.infer<typeof harigamiFormSchema>,
   ) => {
     if (!anchorWallet || !wallet.publicKey) return;
-    console.log(values.coverImage);
+    // console.log(values.coverImage);
 
     setShow(false);
 
@@ -90,12 +94,12 @@ export default function Page() {
       const candy = await createHarigami(wallet, values, updateProgress);
 
       console.log("create candy");
-      await addUserCollective(anchorWallet, connection, candy);
+      await addUserCollective(anchorWallet, candy);
       setProgress(3);
 
       await createHarigamiPda(
         anchorWallet,
-        connection,
+
         [wallet.publicKey],
         candy,
       );
@@ -209,21 +213,6 @@ export default function Page() {
                         </FormItem>
                       )}
                     />
-                    {/* <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          placeholder="タイトルを入力してください"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
                     <div className="flex justify-end mt-5">
                       <Button type="submit" size={"sm"}>
                         Submit

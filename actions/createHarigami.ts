@@ -1,11 +1,7 @@
-import { addUserCollective } from "@/anchorClient";
 import {
   getMetadataUri,
   umiHarigami,
-  // createCoreCollection,
-  // createCandyMachine,
   createCoreCandyMachine,
-  // addItems,
 } from "@/lib/candyMachine";
 import * as metaplex from "@metaplex-foundation/umi";
 
@@ -18,8 +14,8 @@ export const createHarigami = async (
   data: harigamiData,
   updateProgress: (progress: number) => void,
   // creator: web3.PublicKey,
-): Promise<metaplex.PublicKey> => {
-  const coverImage = data.coverImage[0];
+): Promise<metaplex.PublicKey | any> => {
+  const coverImage = data.coverImage;
   const title = "title in image";
 
   const umi = umiHarigami(wallet);

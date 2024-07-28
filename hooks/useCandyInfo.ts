@@ -14,7 +14,7 @@ export const useCandyInfo = (wallet: any, candyParams: string) => {
     };
 
     fetchCandyInfo();
-  });
+  }, [wallet, candyParams]);
 
   return candyMachine;
 };

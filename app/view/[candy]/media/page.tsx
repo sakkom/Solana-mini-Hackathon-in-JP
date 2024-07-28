@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { fetchCandy } from "@/lib/candyMachine";
 import { base64ToBlob, canAddMedia, fetchHarigamiContent } from "@/utils/util";
 import { PlusIcon } from "@radix-ui/react-icons";
@@ -18,7 +18,9 @@ export default function Page({ params }: { params: { candy: string } }) {
   const [collectionMint, setCollectionMint] = useState<any>();
   const [authority, setAuthority] = useState<boolean>(false);
   const [contentIds, setContentIds] = useState<string[]>([]);
-  const [decryptUrl, setDecryptUrl] = useState<{ [id: string]: string }>({});
+  const [decryptUrl, setDecryptUrl] = useState<{
+    [id: string]: { url: string; type: string };
+  }>({});
   const [active, setActive] = useState<string>();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -26,7 +28,7 @@ export default function Page({ params }: { params: { candy: string } }) {
     if (!anchorWallet) return;
 
     const checkAuthority = async () => {
-      const res = await canAddMedia(anchorWallet, connection, candy);
+      const res = await canAddMedia(anchorWallet, candy);
       setAuthority(res);
     };
 
@@ -37,7 +39,7 @@ export default function Page({ params }: { params: { candy: string } }) {
     if (!anchorWallet) return;
 
     const getContent = async () => {
-      const res = await fetchHarigamiContent(anchorWallet, connection, candy);
+      const res = await fetchHarigamiContent(anchorWallet, candy);
       setContentIds(res);
     };
 
@@ -83,10 +85,10 @@ export default function Page({ params }: { params: { candy: string } }) {
     }
 
     if (res.ok) {
-      const decryptData = await res.json();
-      const blob = base64ToBlob(decryptData, "video/mp4");
+      const { base64data, type } = await res.json();
+      const blob = base64ToBlob(base64data, type);
       const url = URL.createObjectURL(blob);
-      setDecryptUrl((prev) => ({ ...prev, [arweaveId]: url }));
+      setDecryptUrl((prev) => ({ ...prev, [arweaveId]: { url, type } }));
       setActive(arweaveId);
       setLoading(null);
     } else {
@@ -107,7 +109,7 @@ export default function Page({ params }: { params: { candy: string } }) {
             </Link>
           </div>
         )}
-        {contentIds && (
+        {contentIds.length > 0 ? (
           <div>
             {contentIds.map((id, index) => (
               <Card key={index} className="m-3">
@@ -142,17 +144,29 @@ export default function Page({ params }: { params: { candy: string } }) {
                   </CardContent>
                 )}
                 {active === id && decryptUrl[id] && (
-                  <CardContent>
-                    <video
-                      src={decryptUrl[id]}
-                      controls
-                      width={"100%"}
-                      className="rounded-md"
-                    />
-                  </CardContent>
+                  <div>
+                    {decryptUrl[id].type === "video/mp4" ? (
+                      <CardContent>
+                        <video
+                          src={decryptUrl[id].url}
+                          controls
+                          width={"100%"}
+                          className="rounded-md"
+                        />
+                      </CardContent>
+                    ) : (
+                      <CardContent>
+                        <img src={decryptUrl[id].url} />
+                      </CardContent>
+                    )}
+                  </div>
                 )}
               </Card>
             ))}
+          </div>
+        ) : (
+          <div className="flex justify-center p-10 ">
+            <p>コンテンツは追加されていません</p>
           </div>
         )}
       </Card>

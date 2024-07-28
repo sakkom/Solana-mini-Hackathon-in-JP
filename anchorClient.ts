@@ -1,20 +1,25 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as web3 from "@solana/web3.js";
 import * as metaplex from "@metaplex-foundation/umi";
-import { Connection } from "@solana/web3.js";
 
 import idl from "@/idl.json";
 import { Program } from "@coral-xyz/anchor";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
+const USERSEED = process.env.NEXT_PUBLIC_USER_SEED;
+
 export const programId = new anchor.web3.PublicKey(
   "H6nb14ncRqiv25UMFk8N9r1bsQEUhkHjjtau9oYdWWaG",
 );
 
+const connection = new web3.Connection(
+  "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
+);
+
 export function setProgram(
   wallet: AnchorWallet | NodeWallet,
-  connection: Connection,
+  // connection: Connection,
 ) {
   const provider = new anchor.AnchorProvider(connection, wallet, {
     commitment: "confirmed",
@@ -26,7 +31,9 @@ export function setProgram(
   return program;
 }
 
-export function createProvider(wallet: AnchorWallet, connection: Connection) {
+export function createProvider(
+  wallet: AnchorWallet /*connection: Connection*/,
+) {
   const provider = new anchor.AnchorProvider(connection, wallet, {
     commitment: "confirmed",
   });
@@ -36,18 +43,15 @@ export function createProvider(wallet: AnchorWallet, connection: Connection) {
 
 export async function createUser(
   wallet: AnchorWallet,
-  connection: Connection,
   name: string,
   genre: number,
 ) {
   try {
-    const provider = createProvider(wallet, connection);
-    if (!provider) return;
-
-    const program = new Program(idl as anchor.Idl, programId, provider);
+    const program = setProgram(wallet);
+    if (!USERSEED) throw new Error("not USERSEED in env");
 
     const [userPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
+      [Buffer.from(USERSEED), wallet.publicKey.toBytes()],
       program.programId,
     );
     console.log("user pda", userPda.toString());
@@ -67,17 +71,14 @@ export async function createUser(
 
 export async function changeUserProfile(
   wallet: AnchorWallet,
-  connection: Connection,
   name: string,
   genre: any, //number, u8
 ) {
-  const provider = createProvider(wallet, connection);
-  if (!provider) return;
-
-  const program = new Program(idl as anchor.Idl, programId, provider);
+  const program = setProgram(wallet);
+  if (!USERSEED) throw new Error("not USERSEED in env");
 
   const [userPda] = web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
+    [Buffer.from(USERSEED), wallet.publicKey.toBytes()],
     program.programId,
   );
   console.log("user pda", userPda.toString());
@@ -96,34 +97,33 @@ export async function changeUserProfile(
   }
 }
 
-export async function fetchUser(wallet: AnchorWallet, connection: Connection) {
-  const program = setProgram(wallet, connection);
+export async function fetchUser(wallet: AnchorWallet) {
+  const program = setProgram(wallet);
+  if (!USERSEED) throw new Error("not USERSEED in env");
 
   const [userPda] = web3.PublicKey.findProgramAddressSync(
-    [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
+    [Buffer.from(USERSEED), wallet.publicKey.toBytes()],
     program.programId,
   );
 
-  // console.log("user pda", userPda.toString());
+  console.log("user pda", userPda.toString());
 
   const userAccount = await program.account.userProfile.fetch(userPda);
-  // console.log("user profile account data:", (userAccount as any).name);
+  console.log(userAccount);
+  console.log("user profile account data:", (userAccount as any).name);
   return userAccount as any;
 }
 
 export async function addUserCollective(
   wallet: AnchorWallet,
-  connection: Connection,
   candy: metaplex.PublicKey,
 ) {
   try {
-    const provider = createProvider(wallet, connection);
-    if (!provider) return;
-
-    const program = new Program(idl as anchor.Idl, programId, provider);
+    const program = setProgram(wallet);
+    if (!USERSEED) throw new Error("not USERSEED in env");
 
     const [userPda] = web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("user-profile-2"), wallet.publicKey.toBytes()],
+      [Buffer.from(USERSEED), wallet.publicKey.toBytes()],
       program.programId,
     );
     // console.log("user pda", userPda.toString());
@@ -146,13 +146,12 @@ export async function addUserCollective(
 
 export async function createHarigamiPda(
   wallet: AnchorWallet,
-  connection: Connection,
   creators: web3.PublicKey[],
   candy: metaplex.PublicKey,
 ) {
   try {
     console.log("harigami pdaを作成するよ");
-    const provider = createProvider(wallet, connection);
+    const provider = createProvider(wallet);
     if (!provider) return;
 
     const program = new Program(idl as anchor.Idl, programId, provider);
@@ -181,12 +180,11 @@ export async function createHarigamiPda(
 
 export async function addMedia(
   wallet: AnchorWallet,
-  connection: Connection,
   candyParams: string,
   arweaveId: string,
 ) {
   try {
-    const program = setProgram(wallet, connection);
+    const program = setProgram(wallet);
     const candyPubkey = new web3.PublicKey(candyParams);
 
     const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
@@ -206,16 +204,14 @@ export async function addMedia(
   }
 }
 
-export async function fetchHarigamiCollection(
-  wallet: AnchorWallet,
-  connection: Connection,
-) {
+export async function fetchHarigamiCollection(wallet: AnchorWallet) {
   try {
-    const program = setProgram(wallet, connection);
+    const program = setProgram(wallet);
 
-    const harigamiAccount = new web3.PublicKey(
-      "AeNujhqxWPByB71677S4wjeCHtk2H2vDyjfoesTcw5yY",
-    );
+    const HARIGAMICOLLECTION = process.env.NEXT_PUBLIC_HARIGAMICOLLECTION;
+    if (!HARIGAMICOLLECTION) throw new Error("harigami account env not found");
+
+    const harigamiAccount = new web3.PublicKey(HARIGAMICOLLECTION);
 
     const data =
       await program.account.harigamiCollection.fetch(harigamiAccount);

@@ -1,5 +1,3 @@
-import * as web3 from "@solana/web3.js";
-import * as metaplex from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import {
   generateSigner,
@@ -13,11 +11,7 @@ import {
   publicKey,
   Umi,
 } from "@metaplex-foundation/umi";
-import {
-  mplCore,
-  createCollectionV1,
-  fetchAssetsByOwner,
-} from "@metaplex-foundation/mpl-core";
+import { mplCore, createCollectionV1 } from "@metaplex-foundation/mpl-core";
 import {
   create,
   addConfigLines,
@@ -30,7 +24,6 @@ import { setComputeUnitLimit } from "@metaplex-foundation/mpl-toolbox";
 import { base58 } from "@metaplex-foundation/umi/serializers";
 import { walletAdapterIdentity } from "@metaplex-foundation/umi-signer-wallet-adapters";
 import { irysUploader } from "@metaplex-foundation/umi-uploader-irys";
-import { fetchHarigamiCollection } from "@/anchorClient";
 
 interface Attributes {
   trait_type?: string;
@@ -64,14 +57,14 @@ const options: TransactionBuilderSendAndConfirmOptions = {
 };
 
 function umiIdentityProvider(wallet: any) {
-  const umi = createUmi(web3.clusterApiUrl("devnet")).use(
-    walletAdapterIdentity(wallet),
-  );
+  const umi = createUmi(
+    "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
+  ).use(walletAdapterIdentity(wallet));
   return umi;
 }
 
 export function umiHarigami(wallet: any) {
-  const umi = createUmi(web3.clusterApiUrl("devnet"))
+  const umi = createUmi("https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv")
     .use(walletAdapterIdentity(wallet))
     .use(irysUploader())
     .use(mplCore())
@@ -81,18 +74,23 @@ export function umiHarigami(wallet: any) {
 
 export async function getMetadataUri(
   umi: Umi,
-  coverImage: File,
+  coverImage: File[],
   title: string,
 ) {
-  const genericFile = await createGenericFileFromBrowserFile(coverImage);
-  //content type
+  const imageUris = await Promise.all(
+    coverImage.map(async (file: File) => {
+      const genericFile = await createGenericFileFromBrowserFile(file, {
+        contentType: file.type,
+      });
+      const [imageUri] = await umi.uploader.upload([genericFile]);
+      return imageUri;
+    }),
+  );
 
-  const [imageUri] = await umi.uploader.upload([genericFile]);
-  // console.log("署名: imageUri");
   const uri = await umi.uploader.uploadJson({
     name: title,
     description: "Generative art on Solana.",
-    image: imageUri,
+    image: imageUris[0],
     animation_url: "",
     external_url: "https://example.com",
     attributes: [
@@ -101,8 +99,10 @@ export async function getMetadataUri(
         value: "no genre",
       },
     ],
+    properties: {
+      file: imageUris.map((uri) => ({ uri: uri })),
+    },
   });
-  // console.log("署名: uri");
 
   return uri;
 }
@@ -236,7 +236,7 @@ export async function mintFromCandyGuard(
 }
 
 export async function fetchCandy(candy_str: string): Promise<CandyMachine> {
-  const umi = createUmi(web3.clusterApiUrl("devnet"));
+  const umi = createUmi("https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv");
   umi.use(mplCoreCandyMachine());
 
   const CM = await fetchCandyMachine(umi, publicKey(candy_str));

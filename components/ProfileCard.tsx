@@ -2,12 +2,11 @@ import { FC, useEffect, useState } from "react";
 import { changeUserProfile } from "@/anchorClient";
 import { genreNumberToObject } from "@/utils/util";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Form,
   FormField,
   FormItem,
-  FormLabel,
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
@@ -37,14 +36,14 @@ export const formSchema = z.object({
 interface ProfileCard {
   user: any;
   wallet: any;
-  connection: any;
 }
 
-export const ProfileCard: FC<ProfileCard> = ({ user, wallet, connection }) => {
+export const ProfileCard: FC<ProfileCard> = ({ user, wallet }) => {
   const router = useRouter();
 
   const [edit, setEdit] = useState<boolean>(false);
   const [icon, setIcons] = useState<string>("");
+  const [status, setStatus] = useState<string>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,25 +59,25 @@ export const ProfileCard: FC<ProfileCard> = ({ user, wallet, connection }) => {
     setIcons(icon_src);
   }, [user]);
 
-  const handleEditOn = () => {
-    setEdit(true);
-  };
-
   const handleChangeUser = async (values: z.infer<typeof formSchema>) => {
     if (!wallet) return;
+
+    setStatus("更新...");
 
     const genre: number = parseInt(values.genre);
     const name = values.username;
     // console.log("changeします", genre, name);
     try {
-      const result = await changeUserProfile(wallet, connection, name, genre);
-      console.log("transaction", result);
+      await changeUserProfile(wallet, name, genre);
     } catch (err) {
       console.error("change not working", err);
     }
 
-    setEdit(false);
-    router.refresh();
+    setTimeout(() => {
+      setEdit(false);
+      setStatus(undefined);
+      router.refresh();
+    }, 10000);
   };
 
   return (
@@ -87,13 +86,19 @@ export const ProfileCard: FC<ProfileCard> = ({ user, wallet, connection }) => {
         {!edit && (
           <Card className="">
             <div className="flex justify-end">
-              <div onClick={handleEditOn}>
+              <div onClick={() => setEdit(true)}>
                 <TuneIcon className="cursor-pointer" />
               </div>
             </div>
             <div className="flex p-5 gap-5">
-              <Image src={icon} alt="alt" width={72} height={72} />
-              <h1>{user?.name}</h1>
+              <Image
+                src={icon}
+                alt="alt"
+                width={50}
+                height={50}
+                className="object-contain"
+              />
+              <p className="text-4xl">{user?.name}</p>
             </div>
           </Card>
         )}
@@ -105,71 +110,81 @@ export const ProfileCard: FC<ProfileCard> = ({ user, wallet, connection }) => {
               className="space-y-5"
             >
               <Card>
-                <CardContent>
-                  <div className="">
-                    <FormField
-                      control={form.control}
-                      name="genre"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select
-                            onValueChange={(value) => field.onChange(value)}
-                            value={field.value}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue>
-                                  <Image
-                                    src={
-                                      iconOptions.find(
-                                        (option) =>
-                                          option.value === (field.value || "0"),
-                                      )?.src || "/icons/guest.png"
-                                    }
-                                    alt="alt"
-                                    width={64}
-                                    height={64}
-                                    className="mt-10"
-                                  />
-                                </SelectValue>
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="mt-5">
-                              {iconOptions.map((item, index) => (
-                                <SelectItem value={item.value} key={index}>
-                                  <Image
-                                    src={item.src}
-                                    alt="alt"
-                                    width={64}
-                                    height={64}
-                                  />
-                                  <div>{item.label}</div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder={user.name} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {status === "更新..." && (
+                  <div className="flex justify-center">
+                    <p className="text-pink-400">{status}</p>
                   </div>
-                </CardContent>
+                )}
+                <div
+                  onClick={() => setEdit(false)}
+                  className="flex justify-end"
+                >
+                  <p className="cursor-pointer">戻る</p>
+                </div>
+                <div className="flex items-center">
+                  <FormField
+                    control={form.control}
+                    name="genre"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={(value) => field.onChange(value)}
+                          value={field.value}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue>
+                                <Image
+                                  src={
+                                    iconOptions.find(
+                                      (option) =>
+                                        option.value === (field.value || "0"),
+                                    )?.src || "/icons/guest.png"
+                                  }
+                                  alt="alt"
+                                  width={64}
+                                  height={64}
+                                />
+                              </SelectValue>
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="mt-5">
+                            {iconOptions.map((item, index) => (
+                              <SelectItem value={item.value} key={index}>
+                                <Image
+                                  src={item.src}
+                                  alt="alt"
+                                  width={64}
+                                  height={64}
+                                />
+                                <div>{item.label}</div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder={user.name} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" size={"sm"}>
+                    Submit
+                  </Button>
+                </div>
               </Card>
-              <div className="flex justify-center">
-                <Button type="submit">Submit</Button>
-              </div>
             </form>
           </Form>
         )}

@@ -1,30 +1,35 @@
 "use client";
 
-import * as web3 from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import {
   useConnection,
   useWallet,
   useAnchorWallet,
 } from "@solana/wallet-adapter-react";
-import { fetchHarigamiCollection, fetchUser } from "@/anchorClient";
+import { fetchUser } from "@/anchorClient";
 import { InitialCard } from "@/components/InitialCard";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   const { publicKey, connected } = useWallet();
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const [user, setUser] = useState<any>();
+  const [show, setShow] = useState<boolean>(false);
 
   useEffect(() => {
     if (!wallet || !connection) return;
 
     const fetchUserPda = async () => {
       try {
-        const user = await fetchUser(wallet, connection);
+        const user = await fetchUser(wallet);
         setUser(user);
+        router.push("/profile");
       } catch (err) {
         console.log("pdaが存在していません");
+        setShow(true);
       }
     };
 
@@ -35,25 +40,18 @@ export default function Home() {
     <div className="flex justify-center items-center h-screen">
       {connected ? (
         <div className="w-1/3">
-          {user ? (
-            <div>{user?.name}</div>
-          ) : (
+          {!user && (
             <div>
-              <h3>profileを作成してください</h3>
-              {publicKey && (
+              {publicKey && show && (
                 <div>
-                  <InitialCard
-                    wallet={wallet}
-                    connection={connection}
-                    publicKey={publicKey}
-                  />
+                  <InitialCard wallet={wallet} publicKey={publicKey} />
                 </div>
               )}
             </div>
           )}
         </div>
       ) : (
-        <div>wallet が接続されていません。</div>
+        <div>loading...</div>
       )}
     </div>
   );

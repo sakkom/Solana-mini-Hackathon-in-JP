@@ -3,8 +3,6 @@ import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import * as web3 from "@solana/web3.js";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
-const DEVNET = web3.clusterApiUrl("devnet");
-
 export async function POST(reqest: Request) {
   try {
     const formData = await reqest.formData();
@@ -15,11 +13,10 @@ export async function POST(reqest: Request) {
     if (!private_key) throw new Error("not a private key");
 
     const keypair = web3.Keypair.fromSecretKey(bs58.decode(private_key));
-    const connection = new web3.Connection(DEVNET, "confirmed");
     const wallet = new NodeWallet(keypair);
-    const program = setProgram(wallet, connection);
+    const program = setProgram(wallet);
 
-    const harigamiCollectionStr = process.env.HARIGAMICOLLECTION;
+    const harigamiCollectionStr = process.env.NEXT_PUBLIC_HARIGAMICOLLECTION;
     if (!harigamiCollectionStr)
       throw new Error("not harigami collection in process.env");
 

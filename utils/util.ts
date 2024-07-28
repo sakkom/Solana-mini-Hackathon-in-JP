@@ -12,7 +12,7 @@ import {
 } from "@metaplex-foundation/mpl-core-candy-machine";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
-import { fetchHarigamiCollection, fetchUser, setProgram } from "@/anchorClient";
+import { fetchHarigamiCollection, setProgram } from "@/anchorClient";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { fetchCandy } from "@/lib/candyMachine";
 
@@ -58,11 +58,10 @@ export function base64ToBlob(base64: any, mimeType: any) {
 
 export async function hasCollectiveNFT(
   wallet: AnchorWallet | NodeWallet,
-  connection: web3.Connection,
   user: string,
   collective: string,
 ) {
-  const assets = await fetchAssetsByYou(wallet, connection, user);
+  const assets = await fetchAssetsByYou(wallet, user);
   if (!assets) throw new Error("not user assets");
   try {
     const hasCollection = assets.some(
@@ -75,9 +74,6 @@ export async function hasCollectiveNFT(
 }
 
 export async function fetchJacket(candy: string) {
-  // const umi = createUmi(web3.clusterApiUrl("devnet")).use(
-  //   mplCoreCandyMachine(),
-  // ); //shftにするとはやくなる
   const umi = createUmi(
     "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
   ).use(mplCoreCandyMachine()); //shftにするとはやくなる
@@ -91,9 +87,12 @@ export async function fetchJacket(candy: string) {
 
     const metaData = await res.json();
 
-    const image = metaData.image;
+    // const image = metaData.image;
+    const properties = metaData.properties;
+    const images = properties.file.map((item: any) => item.uri);
+    // console.log(images);
 
-    return image;
+    return images;
   } catch (err) {
     console.error("not found collection image url from candy");
     return "/404.jpeg";
@@ -101,36 +100,28 @@ export async function fetchJacket(candy: string) {
 }
 
 export async function fetchJacketFromAsset(uri: string) {
-  // const umi = createUmi(web3.clusterApiUrl("devnet")).use(
-  //   mplCoreCandyMachine(),
-  // ); //shftにするとはやくなる
-  const umi = createUmi(
-    "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
-  ).use(mplCoreCandyMachine()); //shftにするとはやくなる
-
   try {
     const res = await fetch(uri);
 
     const metaData = await res.json();
 
-    const image = metaData.image;
+    // const image = metaData.image;
+    const properties = metaData.properties;
+    const images = properties.file.map((item: any) => item.uri);
+    // console.log(images);
 
-    return image;
+    return images;
   } catch (err) {
     console.error("not found collection image url from candy");
     return "/404.jpeg";
   }
 }
 
-export async function canAddMedia(
-  wallet: AnchorWallet,
-  connection: web3.Connection,
-  candyPrams: string,
-) {
+export async function canAddMedia(wallet: AnchorWallet, candyPrams: string) {
   try {
     const candyPubkey = new web3.PublicKey(candyPrams);
 
-    const program = setProgram(wallet, connection);
+    const program = setProgram(wallet);
 
     const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
       [candyPubkey.toBuffer()],
@@ -153,13 +144,12 @@ export async function canAddMedia(
 
 export async function fetchHarigamiContent(
   wallet: AnchorWallet,
-  connection: web3.Connection,
   candyPrams: string,
 ) {
   try {
     const candyPubkey = new web3.PublicKey(candyPrams);
 
-    const program = setProgram(wallet, connection);
+    const program = setProgram(wallet);
 
     const [harigamiPda] = web3.PublicKey.findProgramAddressSync(
       [candyPubkey.toBuffer()],
@@ -183,16 +173,17 @@ export interface AssetWithHarigami {
 
 export async function fetchAssetsByYou(
   wallet: AnchorWallet | NodeWallet,
-  connection: web3.Connection,
   owner: web3.PublicKey | string,
 ) {
   try {
-    const umi = createUmi(web3.clusterApiUrl("devnet"));
+    const umi = createUmi(
+      "https://devnet-rpc.shyft.to?api_key=aEoNRy0ZFiWQX_Lv",
+    );
     const assets = await fetchAssetsByOwner(umi, publicKey(owner), {
       skipDerivePlugins: false,
     });
 
-    const harigamies = await fetchHarigamiCollection(wallet, connection);
+    const harigamies = await fetchHarigamiCollection(wallet);
 
     const harigamiCollection = await Promise.all(
       harigamies.map(async (harigami: web3.PublicKey) => {
@@ -202,7 +193,7 @@ export async function fetchAssetsByYou(
       }),
     );
 
-    console.log(harigamiCollection);
+    // console.log(harigamiCollection);
 
     const assetsWithHarigami: AssetWithHarigami[] = assets
       .map((asset) => {
@@ -217,7 +208,7 @@ export async function fetchAssetsByYou(
       })
       .filter((item) => item.candy !== null);
 
-    console.log(assetsWithHarigami);
+    // console.log(assetsWithHarigami);
     return assetsWithHarigami;
   } catch (err) {
     console.error("not working fetchAssetsByYou");

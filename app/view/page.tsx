@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
 import { fetchHarigamiCollection } from "@/anchorClient";
 import { JacketCard } from "@/components/CollectiveCard";
-import { publicKey } from "@metaplex-foundation/umi";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Page() {
   const wallet = useAnchorWallet();
@@ -16,7 +16,7 @@ export default function Page() {
     if (!wallet) return;
 
     const fetchHarigamies = async () => {
-      const res = await fetchHarigamiCollection(wallet, connection);
+      const res = await fetchHarigamiCollection(wallet);
       setHarigamies(res);
     };
 
@@ -27,11 +27,15 @@ export default function Page() {
     <div className="flex flex-col items-center">
       {harigamies && (
         <div className="w-1/3">
-          {harigamies.map((harigami, index) => (
-            <div key={index}>
-              <JacketCard candy={harigami.toString()} />
-            </div>
-          ))}
+          <Card className="">
+            <CardContent>
+              {harigamies.map((harigami, index) => (
+                <div key={index}>
+                  <JacketCard candy={harigami.toString()} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
