@@ -16,8 +16,6 @@ export default function Page({ params }: { params: { candy: string } }) {
   const candyPrams = params.candy;
   const wallet = useWallet();
   const candyMachine = useCandyInfo(wallet, candyPrams);
-  const anchorWallet: any = useAnchorWallet();
-  const user = useUser(anchorWallet); //middle
   const [collectionMint, setCollectionMint] = useState<metaplex.PublicKey>();
   const [status, setStatus] = useState<string>("");
   const [availe, setAvaile] = useState<number>();

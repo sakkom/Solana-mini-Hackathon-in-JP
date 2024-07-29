@@ -10,7 +10,6 @@ import { useCandyInfo } from "@/hooks/useCandyInfo";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useCreators } from "@/hooks/useCreators";
 import Image from "next/image";
-import { useUser } from "@/hooks/useUser";
 
 export default function Page({ params }: { params: { candy: string } }) {
   const candy = params.candy;
@@ -19,7 +18,6 @@ export default function Page({ params }: { params: { candy: string } }) {
   const candyInfo = useCandyInfo(anchorWallet, candy);
   const creators = useCreators(anchorWallet, connection, candy);
   const [availe, setAvaile] = useState<number>();
-  const user = useUser(anchorWallet); //middle
 
   useEffect(() => {
     if (!candyInfo) return;

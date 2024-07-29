@@ -132,8 +132,8 @@ export default function Page() {
       { title: "メタデータ作成" },
       { title: "キャンディマシン作成" },
       { title: "ユーザー情報更新" },
-      { title: "張紙作成" },
-      { title: "張紙コレクション更新" },
+      { title: "貼紙作成" },
+      { title: "貼紙コレクション更新" },
     ];
 
     return (
