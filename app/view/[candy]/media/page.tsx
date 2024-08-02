@@ -98,7 +98,7 @@ export default function Page({ params }: { params: { candy: string } }) {
 
   return (
     <div className="flex flex-col items-center">
-      <Card className="w-1/3 ">
+      <Card className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 ">
         {authority && (
           <div className="p-5">
             <Link href={`/create/${candy}`}>

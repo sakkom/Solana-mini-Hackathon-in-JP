@@ -55,7 +55,7 @@ export default function Page({ params }: { params: { candy: string } }) {
   return (
     <div className="flex justify-center items-center h-screen">
       {collectionMint ? (
-        <div className="w-1/3">
+        <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
           <div className="flex justify-center m-5">
             {status === "waiting..." && <p>{status}</p>}
             {status === "complite!" && (

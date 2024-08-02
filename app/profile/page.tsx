@@ -54,7 +54,7 @@ export default function Page() {
   return (
     <div className="flex justify-center ">
       {user ? (
-        <div className="w-1/3 ">
+        <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 ">
           <ProfileCard user={user} wallet={wallet} />
 
           <ProfileTab collective={collective} assets={assets} />

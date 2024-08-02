@@ -147,7 +147,7 @@ export default function Page({ params }: { params: { candy: string } }) {
   return (
     <div className="flex justify-center items-center h-screen">
       {show ? (
-        <div className="w-1/3 ">
+        <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 ">
           {authority && (
             <div className="space-y-10">
               {preview && preview.type === "video/mp4" ? (
