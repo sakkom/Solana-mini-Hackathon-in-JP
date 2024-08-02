@@ -180,7 +180,7 @@ export default function Page({ params }: { params: { candy: string } }) {
                               Upload File
                             </FormLabel>
                             <FormDescription>
-                              mp4を一つ選択してください
+                              mp4,gifを一つ選択してください
                             </FormDescription>
                             <FormControl>
                               <Input

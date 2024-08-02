@@ -46,7 +46,7 @@ export const InitialCard: FC<InitialCardProps> = ({ wallet, publicKey }) => {
   const handleCreateUser = async (values: z.infer<typeof formSchema>) => {
     if (!wallet) return;
 
-    setStatus("execute ...");
+    setStatus("waiting ...");
 
     const genre: number = parseInt(values.genre);
     const name = values.username;
@@ -54,7 +54,7 @@ export const InitialCard: FC<InitialCardProps> = ({ wallet, publicKey }) => {
       await createUser(wallet, name, genre);
       setTimeout(() => {
         router.push(`/profile`);
-      }, 2000);
+      }, 10000);
     } catch (err: any) {
       setStatus(`プログラムの実行に失敗しました: ${err.message}`);
     }
@@ -68,6 +68,8 @@ export const InitialCard: FC<InitialCardProps> = ({ wallet, publicKey }) => {
           className="space-y-5"
         >
           <div className="flex justify-center">
+            {status && <div>{status}</div>}
+
             <p>profileを作成してください</p>
           </div>
           <Card>
@@ -139,8 +141,6 @@ export const InitialCard: FC<InitialCardProps> = ({ wallet, publicKey }) => {
           </div>
         </form>
       </Form>
-
-      {status && <div>{status}</div>}
     </div>
   );
 };
